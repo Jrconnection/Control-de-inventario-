@@ -47,13 +47,13 @@ details{ margin-top:12px; }
 
   // Configuración de Firebase
   const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_AUTH_DOMAIN",
-    databaseURL: "TU_DATABASE_URL",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_STORAGE_BUCKET",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
+     apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+  authDomain: "control-de-inventario-633f5.firebaseapp.com",
+  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+  projectId: "control-de-inventario-633f5",
+  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+  messagingSenderId: "1012694355492",
+  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -94,6 +94,7 @@ details{ margin-top:12px; }
   onValue(ref(db,'stock'), snapshot=>{
     stock = [];
     snapshot.forEach(child=>stock.push({id: child.key, ...child.val()}));
+    console.log("Stock actualizado:", stock);
     render();
   });
 
@@ -110,7 +111,6 @@ details{ margin-top:12px; }
     snapshot.forEach(child=>costs.push(child.val()));
     render();
   });
-  
   addBtn.onclick = ()=>{
     const model = modelInput.value.trim();
     const desc = descInput.value.trim();
@@ -122,9 +122,14 @@ details{ margin-top:12px; }
       refreshModels();
     }
 
-    // 🔹 Eliminamos la validación que bloqueaba duplicados
+    // 🔹 Guardar en Firebase
     const newItemRef = push(ref(db,'stock'));
-    set(newItemRef, { model, type, desc, qty: 0 });
+    set(newItemRef, { model, type, desc, qty: 0 })
+      .then(()=>{
+        console.log("Agregado:", model, type, desc);
+      })
+      .catch(err=>console.error("Error al guardar:", err));
+
     modelInput.value = '';
     descInput.value = '';
   };
@@ -164,6 +169,7 @@ details{ margin-top:12px; }
   }
 
   function render(){
+    console.log("Renderizando stock:", stock); // 👀 Ver qué llega
     const s = search.value.toLowerCase();
 
     table.innerHTML = stock
@@ -201,7 +207,7 @@ details{ margin-top:12px; }
 
   search.oninput = render;
 </script>
-</head>
+  </head>
 <body>
 <header>
   <h2>Inventario de Pantallas y Baterías</h2>
@@ -277,3 +283,4 @@ details{ margin-top:12px; }
 
 </body>
 </html>
+
