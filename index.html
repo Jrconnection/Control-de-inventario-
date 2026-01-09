@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -26,8 +26,8 @@ body{
   background:linear-gradient(135deg,#020617,#0f172a);
   color:var(--text);
 }
-header{ padding:20px; border-bottom:1px solid var(--border);}
-main{ padding:24px; max-width:1400px; margin:auto;}
+header{ padding:20px; border-bottom:1px solid var(--border); }
+main{ padding:24px; max-width:1400px; margin:auto; }
 .panel{
   background:linear-gradient(180deg,var(--panel),var(--panel-soft));
   border:1px solid var(--border);
@@ -49,174 +49,22 @@ button{
   cursor:pointer;
 }
 button:hover{ background:var(--primary-hover) }
-table{ width:100%; border-collapse:collapse; margin-top:12px;}
-th,td{ padding:12px; border-bottom:1px solid var(--border);}
-.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;}
+table{ width:100%; border-collapse:collapse; margin-top:12px; }
+th,td{ padding:12px; border-bottom:1px solid var(--border); }
+.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
 .pantalla{ background:rgba(34,197,94,.15); color:var(--green) }
 .bateria{ background:rgba(250,204,21,.2); color:var(--yellow) }
 .actions button{ margin-right:6px }
 .in{ background:rgba(34,197,94,.25); color:var(--green) }
 .out{ background:rgba(239,68,68,.25); color:var(--red) }
 .del{ background:rgba(148,163,184,.2) }
-details{ margin-top:12px;}
+details{ margin-top:12px; }
 </style>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js"></script>
 
-  // 🔹 REEMPLAZA ESTO CON TU CONFIG DE FIREBASE
-  const firebaseConfig = {
-    apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
-  authDomain: "control-de-inventario-633f5.firebaseapp.com",
-  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
-  projectId: "control-de-inventario-633f5",
-  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
-  messagingSenderId: "1012694355492",
-  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  let stock = [];
-  let logs = [];
-  let costs = [];
-  let models = [
-    'iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max',
-    'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max',
-    'iPhone 12','iPhone 12 Pro','iPhone 12 Pro Max',
-    'iPhone 13','iPhone 13 Pro','iPhone 13 Pro Max',
-    'iPhone 14','iPhone 14 Pro','iPhone 14 Pro Max',
-    'iPhone 15','iPhone 15 Pro','iPhone 15 Pro Max',
-    'iPhone 16','iPhone 16 Pro','iPhone 16 Pro Max',
-    'iPhone 17','iPhone 17 Pro','iPhone 17 Pro Max',
-    'Samsung S21 Ultra','Samsung S22 Ultra','Samsung S23 Ultra','Samsung S24 Ultra','Samsung S25 Ultra'
-  ];
-
-  // DOM
-  const modelInput = document.getElementById('model');
-  const descInput = document.getElementById('desc');
-  const typeSelect = document.getElementById('type');
-  const addBtn = document.getElementById('addModel');
-  const table = document.getElementById('table');
-  const search = document.getElementById('search');
-  const logsT = document.getElementById('logs');
-  const costsT = document.getElementById('costs');
-  const modelsList = document.getElementById('models');
-
-  function refreshModels(){
-    modelsList.innerHTML = models.map(m => <option value="${m}">).join('');
-  }
-  refreshModels();
-
-  // ===== Escuchar Firebase =====
-  onValue(ref(db, 'stock'), snapshot=>{
-    stock = [];
-    snapshot.forEach(child => stock.push({id: child.key, ...child.val()}));
-    render();
-  });
-
-  onValue(ref(db,'logs'), snapshot=>{
-    logs = [];
-    snapshot.forEach(child=>logs.push(child.val()));
-    render();
-  });
-
-  onValue(ref(db,'costs'), snapshot=>{
-    costs = [];
-    snapshot.forEach(child=>costs.push(child.val()));
-    render();
-  });
-
-  // ===== Funciones =====
-  addBtn.onclick = ()=>{
-    const model = modelInput.value.trim();
-    const desc = descInput.value.trim();
-    const type = typeSelect.value;
-    if(!model) return;
-
-    if(!models.includes(model)){
-      models.push(model);
-      refreshModels();
-    }
-
-    if(stock.find(i=>i.model===model && i.type===type && i.desc===desc)) return;
-
-    const newItemRef = push(ref(db, 'stock'));
-    set(newItemRef, { model, type, desc, qty: 0 })
-      .then(()=> { modelInput.value=''; descInput.value=''; render(); })
-      .catch(err=>alert('Error al agregar: '+err));
-  };
-
-  function move(id, dir){
-    const qty = parseInt(prompt('Cantidad'));
-    if(!qty || qty<=0) return;
-    const item = stock.find(i=>i.id===id);
-    if(dir==='out' && item.qty<qty){ alert('Stock insuficiente'); return; }
-
-    if(dir==='in'){
-      const price = parseFloat(prompt('Precio unitario de compra'));
-      if(!price || price<=0) return;
-      const newCost = { date: new Date().toLocaleString(), model:item.model, qty, price, total: qty*price };
-      set(push(ref(db,'costs')), newCost);
-    }
-
-    set(push(ref(db,'logs')), {
-      date: new Date().toLocaleString(),
-      model: item.model,
-      action: dir==='in'?'Entrada':'Salida',
-      qty
-    });
-
-    update(ref(db,'stock/'+id), { qty: dir==='in'?item.qty+qty:item.qty-qty });
-  }
-
-  function removeItem(id){
-    const item = stock.find(i=>i.id===id);
-    if(!item) return;
-    if(!confirm(Eliminar ${item.model} (${item.desc})?)) return;
-    remove(ref(db,'stock/'+id));
-  }
-
-  function render(){
-    const s = search.value.toLowerCase();
-
-    table.innerHTML = stock
-      .filter(i=>!s||i.model.toLowerCase().includes(s))
-      .map(i=>`
-        <tr>
-          <td>${i.model}</td>
-          <td><span class="badge ${i.type}">${i.type}</span></td>
-          <td>${i.desc||'-'}</td>
-          <td>${i.qty}</td>
-          <td class="actions">
-            <button class="in" onclick="move('${i.id}','in')">➕</button>
-            <button class="out" onclick="move('${i.id}','out')">➖</button>
-            <button class="del" onclick="removeItem('${i.id}')">🗑️</button>
-          </td>
-        </tr>`).join('');
-
-    logsT.innerHTML = logs.map(l=>`
-      <tr>
-        <td>${l.date}</td>
-        <td>${l.model}</td>
-        <td>${l.action}</td>
-        <td>${l.qty}</td>
-      </tr>`).join('');
-
-    costsT.innerHTML = costs.map(c=>`
-      <tr>
-        <td>${c.date}</td>
-        <td>${c.model}</td>
-        <td>${c.qty}</td>
-        <td>${c.price}</td>
-        <td>${c.total}</td>
-      </tr>`).join('');
-  }
-
-  search.oninput = render;
-</script>
 </head>
 <body>
 <header>
@@ -284,6 +132,147 @@ details{ margin-top:12px;}
   </table>
 </details>
 </div>
-</main>
+
+<script>
+  // 🔹 REEMPLAZA CON TU CONFIG DE FIREBASE
+  const firebaseConfig = {
+   apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+  authDomain: "control-de-inventario-633f5.firebaseapp.com",
+  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+  projectId: "control-de-inventario-633f5",
+  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+  messagingSenderId: "1012694355492",
+  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Variables
+  let stock = [], logs = [], costs = [];
+  let models = [
+    'iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max',
+    'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone 12','iPhone 12 Pro','iPhone 12 Pro Max',
+    'iPhone 13','iPhone 13 Pro','iPhone 13 Pro Max','iPhone 14','iPhone 14 Pro','iPhone 14 Pro Max',
+    'iPhone 15','iPhone 15 Pro','iPhone 15 Pro Max','iPhone 16','iPhone 16 Pro','iPhone 16 Pro Max',
+    'iPhone 17','iPhone 17 Pro','iPhone 17 Pro Max',
+    'Samsung S21 Ultra','Samsung S22 Ultra','Samsung S23 Ultra','Samsung S24 Ultra','Samsung S25 Ultra'
+  ];
+
+  const modelInput = document.getElementById('model');
+  const descInput = document.getElementById('desc');
+  const typeSelect = document.getElementById('type');
+  const addBtn = document.getElementById('addModel');
+  const table = document.getElementById('table');
+  const search = document.getElementById('search');
+  const logsT = document.getElementById('logs');
+  const costsT = document.getElementById('costs');
+  const modelsList = document.getElementById('models');
+
+  function refreshModels(){
+    modelsList.innerHTML = models.map(m=>`<option value="${m}">`).join('');
+  }
+  refreshModels();
+
+  // Escuchar stock
+  db.ref('stock').on('value', snapshot=>{
+    stock = [];
+    snapshot.forEach(child=>stock.push({id: child.key, ...child.val()}));
+    render();
+  });
+
+  // Escuchar logs
+  db.ref('logs').on('value', snapshot=>{
+    logs = [];
+    snapshot.forEach(child=>logs.push(child.val()));
+    render();
+  });
+
+  // Escuchar costs
+  db.ref('costs').on('value', snapshot=>{
+    costs = [];
+    snapshot.forEach(child=>costs.push(child.val()));
+    render();
+  });
+
+  addBtn.onclick = ()=>{
+    const model = modelInput.value.trim();
+    const desc = descInput.value.trim();
+    const type = typeSelect.value;
+    if(!model) return;
+
+    if(!models.includes(model)){
+      models.push(model);
+      refreshModels();
+    }
+
+    if(stock.find(i=>i.model===model && i.type===type && i.desc===desc)) return;
+
+    db.ref('stock').push({ model, type, desc, qty: 0 });
+    modelInput.value = '';
+    descInput.value = '';
+  };
+
+  function move(id, dir){
+    const qty = parseInt(prompt('Cantidad'));
+    if(!qty || qty <=0) return;
+
+    const item = stock.find(i=>i.id===id);
+    if(dir==='out' && item.qty<qty){
+      alert('Stock insuficiente'); return;
+    }
+
+    if(dir==='in'){
+      const price = parseFloat(prompt('Precio unitario de compra'));
+      if(!price || price<=0) return;
+      db.ref('costs').push({ date:new Date().toLocaleString(), model:item.model, qty, price, total: qty*price });
+    }
+
+    db.ref('logs').push({ date:new Date().toLocaleString(), model:item.model, action:dir==='in'?'Entrada':'Salida', qty });
+    db.ref('stock/'+id).update({ qty: dir==='in'?item.qty+qty:item.qty-qty });
+  }
+
+  function removeItem(id){
+    const item = stock.find(i=>i.id===id);
+    if(!item) return;
+    if(!confirm(`Eliminar ${item.model} (${item.desc})?`)) return;
+    db.ref('stock/'+id).remove();
+  }
+
+  function render(){
+    const s = search.value.toLowerCase();
+    table.innerHTML = stock.filter(i=>!s || i.model.toLowerCase().includes(s)).map(i=>`
+      <tr>
+        <td>${i.model}</td>
+        <td><span class="badge ${i.type}">${i.type}</span></td>
+        <td>${i.desc||'-'}</td>
+        <td>${i.qty}</td>
+        <td class="actions">
+          <button class="in" onclick="move('${i.id}','in')">➕</button>
+          <button class="out" onclick="move('${i.id}','out')">➖</button>
+          <button class="del" onclick="removeItem('${i.id}')">🗑️</button>
+        </td>
+      </tr>`).join('');
+
+    logsT.innerHTML = logs.map(l=>`
+      <tr>
+        <td>${l.date}</td>
+        <td>${l.model}</td>
+        <td>${l.action}</td>
+        <td>${l.qty}</td>
+      </tr>`).join('');
+
+    costsT.innerHTML = costs.map(c=>`
+      <tr>
+        <td>${c.date}</td>
+        <td>${c.model}</td>
+        <td>${c.qty}</td>
+        <td>${c.price}</td>
+        <td>${c.total}</td>
+      </tr>`).join('');
+  }
+
+  search.oninput = render;
+</script>
 </body>
 </html>
