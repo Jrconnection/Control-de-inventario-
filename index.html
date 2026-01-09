@@ -91,12 +91,19 @@ details{ margin-top:12px; }
   refreshModels();
 
   // Escuchar stock
-  onValue(ref(db,'stock'), snapshot=>{
-    stock = [];
-    snapshot.forEach(child=>stock.push({id: child.key, ...child.val()}));
-    console.log("Stock actualizado:", stock);
-    render();
-  });
+  // Escuchar stock (corregido)
+onValue(ref(db,'stock'), snapshot=>{
+  stock = [];
+  const data = snapshot.val();
+  if (data) {
+    Object.entries(data).forEach(([key, value])=>{
+      stock.push({id: key, ...value});
+    });
+  }
+  console.log("Stock actualizado:", stock);
+  render();
+});
+
 
   // Escuchar logs
   onValue(ref(db,'logs'), snapshot=>{
