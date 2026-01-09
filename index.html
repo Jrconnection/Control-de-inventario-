@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -19,15 +19,27 @@
   --yellow:#facc15;
   --red:#ef4444;
 }
+
 *{ box-sizing:border-box }
+
 body{
   margin:0;
   font-family:system-ui, sans-serif;
   background:linear-gradient(135deg,#020617,#0f172a);
   color:var(--text);
 }
-header{ padding:20px; border-bottom:1px solid var(--border); }
-main{ padding:24px; max-width:1400px; margin:auto; }
+
+header{
+  padding:20px;
+  border-bottom:1px solid var(--border);
+}
+
+main{
+  padding:24px;
+  max-width:1400px;
+  margin:auto;
+}
+
 .panel{
   background:linear-gradient(180deg,var(--panel),var(--panel-soft));
   border:1px solid var(--border);
@@ -35,6 +47,7 @@ main{ padding:24px; max-width:1400px; margin:auto; }
   padding:20px;
   margin-bottom:20px;
 }
+
 input,select,button{
   padding:8px 10px;
   border-radius:10px;
@@ -42,23 +55,45 @@ input,select,button{
   background:#020617;
   color:var(--text);
 }
+
 button{
   background:var(--primary);
   color:#020617;
   font-weight:600;
   cursor:pointer;
 }
+
 button:hover{ background:var(--primary-hover) }
-table{ width:100%; border-collapse:collapse; margin-top:12px; }
-th,td{ padding:12px; border-bottom:1px solid var(--border); }
-.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid var(--border);
+}
+
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+}
+
 .pantalla{ background:rgba(34,197,94,.15); color:var(--green) }
 .bateria{ background:rgba(250,204,21,.2); color:var(--yellow) }
+
 .actions button{ margin-right:6px }
 .in{ background:rgba(34,197,94,.25); color:var(--green) }
 .out{ background:rgba(239,68,68,.25); color:var(--red) }
 .del{ background:rgba(148,163,184,.2) }
-details{ margin-top:12px; }
+
+details{
+  margin-top:12px;
+}
 </style>
 
 <!-- Firebase -->
@@ -79,6 +114,7 @@ details{ margin-top:12px; }
   <option value="pantalla">Pantalla</option>
   <option value="bateria">Batería</option>
 </select>
+
 <input id="model" list="models" placeholder="Modelo (ej: iPhone 11)">
 <input id="desc" placeholder="Descripción (ej: Con marco / OLED)">
 <datalist id="models"></datalist>
@@ -132,24 +168,25 @@ details{ margin-top:12px; }
   </table>
 </details>
 </div>
+</main>
 
 <script>
-  // 🔹 REEMPLAZA CON TU CONFIG DE FIREBASE
+  // Configura tu Firebase
   const firebaseConfig = {
-   apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
-  authDomain: "control-de-inventario-633f5.firebaseapp.com",
-  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
-  projectId: "control-de-inventario-633f5",
-  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
-  messagingSenderId: "1012694355492",
-  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    databaseURL: "TU_DATABASE_URL",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_MESSAGING_SENDER_ID",
+    appId: "TU_APP_ID"
   };
-
-  const app = firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Variables
-  let stock = [], logs = [], costs = [];
+  let stock = [];
+  let logs = [];
+  let costs = [];
   let models = [
     'iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max',
     'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max','iPhone 12','iPhone 12 Pro','iPhone 12 Pro Max',
@@ -167,35 +204,33 @@ details{ margin-top:12px; }
   const search = document.getElementById('search');
   const logsT = document.getElementById('logs');
   const costsT = document.getElementById('costs');
-  const modelsList = document.getElementById('models');
 
   function refreshModels(){
+    const modelsList = document.getElementById('models');
     modelsList.innerHTML = models.map(m=>`<option value="${m}">`).join('');
   }
   refreshModels();
 
-  // Escuchar stock
+  // Leer stock
   db.ref('stock').on('value', snapshot=>{
     stock = [];
-    snapshot.forEach(child=>stock.push({id: child.key, ...child.val()}));
+    snapshot.forEach(snap => stock.push({id: snap.key, ...snap.val()}));
     render();
   });
 
-  // Escuchar logs
   db.ref('logs').on('value', snapshot=>{
     logs = [];
-    snapshot.forEach(child=>logs.push(child.val()));
+    snapshot.forEach(snap => logs.push(snap.val()));
     render();
   });
 
-  // Escuchar costs
   db.ref('costs').on('value', snapshot=>{
     costs = [];
-    snapshot.forEach(child=>costs.push(child.val()));
+    snapshot.forEach(snap => costs.push(snap.val()));
     render();
   });
 
-  addBtn.onclick = ()=>{
+  addBtn.onclick = function(){
     const model = modelInput.value.trim();
     const desc = descInput.value.trim();
     const type = typeSelect.value;
@@ -208,27 +243,26 @@ details{ margin-top:12px; }
 
     if(stock.find(i=>i.model===model && i.type===type && i.desc===desc)) return;
 
-    db.ref('stock').push({ model, type, desc, qty: 0 });
+    db.ref('stock').push().set({ model, type, desc, qty:0 });
+
     modelInput.value = '';
     descInput.value = '';
-  };
+  }
 
   function move(id, dir){
     const qty = parseInt(prompt('Cantidad'));
-    if(!qty || qty <=0) return;
-
+    if(!qty || qty<=0) return;
     const item = stock.find(i=>i.id===id);
-    if(dir==='out' && item.qty<qty){
-      alert('Stock insuficiente'); return;
-    }
+    if(dir==='out' && item.qty<qty){ alert('Stock insuficiente'); return; }
 
     if(dir==='in'){
       const price = parseFloat(prompt('Precio unitario de compra'));
       if(!price || price<=0) return;
-      db.ref('costs').push({ date:new Date().toLocaleString(), model:item.model, qty, price, total: qty*price });
+      db.ref('costs').push().set({ date:new Date().toLocaleString(), model:item.model, qty, price, total:qty*price });
     }
 
-    db.ref('logs').push({ date:new Date().toLocaleString(), model:item.model, action:dir==='in'?'Entrada':'Salida', qty });
+    db.ref('logs').push().set({ date:new Date().toLocaleString(), model:item.model, action:dir==='in'?'Entrada':'Salida', qty });
+
     db.ref('stock/'+id).update({ qty: dir==='in'?item.qty+qty:item.qty-qty });
   }
 
@@ -241,18 +275,21 @@ details{ margin-top:12px; }
 
   function render(){
     const s = search.value.toLowerCase();
-    table.innerHTML = stock.filter(i=>!s || i.model.toLowerCase().includes(s)).map(i=>`
-      <tr>
-        <td>${i.model}</td>
-        <td><span class="badge ${i.type}">${i.type}</span></td>
-        <td>${i.desc||'-'}</td>
-        <td>${i.qty}</td>
-        <td class="actions">
-          <button class="in" onclick="move('${i.id}','in')">➕</button>
-          <button class="out" onclick="move('${i.id}','out')">➖</button>
-          <button class="del" onclick="removeItem('${i.id}')">🗑️</button>
-        </td>
-      </tr>`).join('');
+
+    table.innerHTML = stock
+      .filter(i=>!s||i.model.toLowerCase().includes(s))
+      .map(i=>`
+        <tr>
+          <td>${i.model}</td>
+          <td><span class="badge ${i.type}">${i.type}</span></td>
+          <td>${i.desc||'-'}</td>
+          <td>${i.qty}</td>
+          <td class="actions">
+            <button class="in" onclick="move('${i.id}','in')">➕</button>
+            <button class="out" onclick="move('${i.id}','out')">➖</button>
+            <button class="del" onclick="removeItem('${i.id}')">🗑️</button>
+          </td>
+        </tr>`).join('');
 
     logsT.innerHTML = logs.map(l=>`
       <tr>
@@ -273,9 +310,6 @@ details{ margin-top:12px; }
   }
 
   search.oninput = render;
-  // Hacer las funciones globales
-window.move = move;
-window.removeItem = removeItem;
 </script>
 </body>
 </html>
