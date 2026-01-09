@@ -105,29 +105,31 @@ onValue(ref(db,'stock'), snapshot=>{
 });
 
 
-  // Escuchar logs
-  onValue(ref(db,'logs'), snapshot=>{
-    logs = [];
-    snapshot.forEach(child=>logs.push(child.val()));
-    render();
-  });
+// Escuchar logs (corregido)
+onValue(ref(db,'logs'), snapshot=>{
+  logs = [];
+  const data = snapshot.val();
+  if (data) {
+    Object.entries(data).forEach(([key, value])=>{
+      logs.push({id: key, ...value});
+    });
+  }
+  console.log("Logs actualizados:", logs);
+  render();
+});
 
-  // Escuchar costs
-  onValue(ref(db,'costs'), snapshot=>{
-    costs = [];
-    snapshot.forEach(child=>costs.push(child.val()));
-    render();
-  });
-  addBtn.onclick = ()=>{
-    const model = modelInput.value.trim();
-    const desc = descInput.value.trim();
-    const type = typeSelect.value;
-    if(!model) return;
-
-    if(!models.includes(model)){
-      models.push(model);
-      refreshModels();
-    }
+// Escuchar costs (corregido)
+onValue(ref(db,'costs'), snapshot=>{
+  costs = [];
+  const data = snapshot.val();
+  if (data) {
+    Object.entries(data).forEach(([key, value])=>{
+      costs.push({id: key, ...value});
+    });
+  }
+  console.log("Costs actualizados:", costs);
+  render();
+});
 
     // 🔹 Guardar en Firebase
     const newItemRef = push(ref(db,'stock'));
