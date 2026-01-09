@@ -38,6 +38,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); }
 .del{ background:rgba(148,163,184,.2) }
 details{ margin-top:12px; }
 </style>
+
 <!-- 🔹 Firebase modular v10 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
@@ -46,13 +47,13 @@ details{ margin-top:12px; }
 
   // Configuración de Firebase
   const firebaseConfig = {
-  apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
-  authDomain: "control-de-inventario-633f5.firebaseapp.com",
-  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
-  projectId: "control-de-inventario-633f5",
-  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
-  messagingSenderId: "1012694355492",
-  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    databaseURL: "TU_DATABASE_URL",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -73,7 +74,6 @@ details{ margin-top:12px; }
     'iPhone 17','iPhone 17 Pro','iPhone 17 Pro Max',
     'Samsung S21 Ultra','Samsung S22 Ultra','Samsung S23 Ultra','Samsung S24 Ultra','Samsung S25 Ultra'
   ];
-
   // Elementos DOM
   const modelInput = document.getElementById('model');
   const descInput = document.getElementById('desc');
@@ -110,6 +110,7 @@ details{ margin-top:12px; }
     snapshot.forEach(child=>costs.push(child.val()));
     render();
   });
+  
   addBtn.onclick = ()=>{
     const model = modelInput.value.trim();
     const desc = descInput.value.trim();
@@ -121,8 +122,7 @@ details{ margin-top:12px; }
       refreshModels();
     }
 
-    if(stock.find(i=>i.model===model && i.type===type && i.desc===desc)) return;
-
+    // 🔹 Eliminamos la validación que bloqueaba duplicados
     const newItemRef = push(ref(db,'stock'));
     set(newItemRef, { model, type, desc, qty: 0 });
     modelInput.value = '';
