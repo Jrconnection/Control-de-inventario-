@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reparaciones - Sistema</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --bg:#020617;
+  --panel:#0f172a;
+  --panel-soft:#111827;
+  --border:#1e293b;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --primary:#38bdf8;
+  --primary-hover:#0ea5e9;
+  --green:#22c55e;
+  --yellow:#facc15;
+  --red:#ef4444;
+}
+
+*{ box-sizing:border-box }
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background: var(--bg); /* color sólido */
+  color:var(--text);
+  display:flex;
+  min-height:100dvh; /* 🔥 clave para iPhone */
+}
+main{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+  background: linear-gradient(135deg,#020617,#0f172a);
+}
+
+      /* Sidebar */
+      aside {
+        width: 240px;
+        background: #020617;
+        border-right: 1px solid var(--border);
+        padding: 20px;
+      }
+
+      aside h2 {
+        font-size: 18px;
+        margin-bottom: 30px;
+      }
+
+      nav a {
+        display: block;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        color: var(--text);
+        text-decoration: none;
+        background: transparent;
+      }
+
+      nav a:hover {
+        background: var(--panel);
+      }
+main{ flex:1; padding:20px; overflow:auto; }
+.panel{ background:linear-gradient(180deg,var(--panel),var(--panel-soft)); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:20px; }
+input,select,button{ padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#020617; color:var(--text); }
+button{ background:var(--primary); color:#020617; font-weight:600; cursor:pointer; }
+button:hover{ background:var(--primary-hover) }
+table{ width:100%; border-collapse:collapse; margin-top:12px; }
+th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
+.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+.pending{ background:rgba(250,204,21,.2); color:var(--yellow); }
+.inprogress{ background:rgba(59,130,246,.2); color:#3b82f6; }
+.completed{ background:rgba(34,197,94,.15); color:var(--green); }
+.details-table th, .details-table td{ padding:8px; font-size:14px; }
+</style>
+
+<style>
+/* Responsive tweaks for reparaciones.html */
+@media (max-width: 800px) {
+  body { flex-direction: column; }
+  aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 14px; }
+  nav a { display: inline-block; margin-right: 8px; }
+  .panel { padding: 12px; }
+  input, select, button { width: 100%; margin-top: 8px; }
+  .panel { overflow-x: auto; }
+  table { min-width: 600px; }
+  .details-table th, .details-table td { font-size: 13px; }
+}
+</style>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+  import { getDatabase, ref, onValue, push, set, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+  authDomain: "control-de-inventario-633f5.firebaseapp.com",
+  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+  projectId: "control-de-inventario-633f5",
+  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+  messagingSenderId: "1012694355492",
+  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let repairs = [];
+
+  const searchInput = document.getElementById('search');
+  const repairsTable = document.getElementById('repairsTable');
+  const completedTable = document.getElementById('completedTable');
+
+  // Escuchar reparaciones
+  onValue(ref(db,'repairs'), snapshot=>{
+    repairs = [];
+    snapshot.forEach(child=>{
+      repairs.push({id: child.key, ...child.val()});
+    });
+    render();
+  });
+
+  // Función para agregar reparación
+  window.addRepair = ()=>{
+    const name = document.getElementById('clientName').value.trim();
+    const phone = document.getElementById('clientPhone').value.trim();
+    const model = document.getElementById('deviceModel').value.trim();
+    const color = document.getElementById('deviceColor').value.trim();
+    const issue = document.getElementById('issue').value.trim();
+    const price = parseFloat(document.getElementById('price').value.trim());
+    const responsible = document.getElementById('responsible').value.trim();
+
+    if(!name || !phone || !model || !issue || !price || !responsible) {
+      alert("Todos los campos son obligatorios");
+      return;
+    }
+
+    const newRef = push(ref(db,'repairs'));
+    set(newRef,{
+      clientName: name,
+      clientPhone: phone,
+      model,
+      color,
+      issue,
+      price,
+      responsible,
+      status: "Pendiente",
+      delivered: false,
+      receivedAt: new Date().toLocaleString()
+    });
+
+    document.getElementById('repairForm').reset();
+  }
+
+  // Cambiar estado de reparación
+  window.updateStatus = (id,newStatus)=>{
+    update(ref(db,'repairs/'+id), {status: newStatus});
+  }
+
+  // Marcar como entregado
+  window.markDelivered = (id)=>{
+    update(ref(db,'repairs/'+id), {delivered:true});
+  }
+
+  function render(){
+    const s = searchInput.value.toLowerCase();
+
+    // Reparaciones activas (Pendiente o En Proceso)
+    repairsTable.innerHTML = repairs
+      .filter(r=>!r.delivered && (!s || r.clientName.toLowerCase().includes(s) || r.clientPhone.includes(s)))
+      .map(r=>`
+        <tr>
+          <td>${r.clientName}</td>
+          <td>${r.clientPhone}</td>
+          <td>${r.model}</td>
+          <td>${r.color||'-'}</td>
+          <td>${r.issue}</td>
+          <td>${r.price}</td>
+          <td>${r.responsible}</td>
+          <td><span class="badge ${r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':'completed'}">${r.status}</span></td>
+          <td>
+            ${r.status!=='Completado'?`<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button><button onclick="updateStatus('${r.id}','Completado')">Completar</button>`:''}
+            ${!r.delivered?`<button onclick="markDelivered('${r.id}')">Entregar</button>`:''}
+          </td>
+        </tr>`).join('');
+
+    // Reparaciones completadas
+    completedTable.innerHTML = repairs
+      .filter(r=>r.delivered)
+      .map(r=>`
+        <tr>
+          <td>${r.clientName}</td>
+          <td>${r.clientPhone}</td>
+          <td>${r.model}</td>
+          <td>${r.color||'-'}</td>
+          <td>${r.issue}</td>
+          <td>${r.price}</td>
+          <td>${r.responsible}</td>
+          <td><span class="badge completed">Completado</span></td>
+        </tr>`).join('');
+  }
+
+  searchInput.oninput = render;
+
+</script>
+
+</head>
+<body>
+  <aside>
+      <h2>📱 Sistema Técnico</h2>
+      <nav>
+        <a href="index.html">🏠 Dashboard</a>
+        <a href="inventario.html">🧾 Inventario</a>
+        <a href="reparaciones.html">🔧 Reparaciones</a>
+      </nav>
+    </aside>
+  <main>
+    <h2>Registrar reparación</h2>
+    <div class="panel">
+      <form id="repairForm" onsubmit="event.preventDefault(); addRepair();">
+        <input id="clientName" placeholder="Nombre del cliente">
+        <input id="clientPhone" placeholder="Teléfono del cliente">
+        <input id="deviceModel" placeholder="Modelo del dispositivo">
+        <input id="deviceColor" placeholder="Color (opcional)">
+        <input id="issue" placeholder="Problema / Reparación">
+        <input id="price" placeholder="Precio">
+        <input id="responsible" placeholder="Encargado">
+        <button type="submit">Agregar reparación</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Reparaciones activas</h3>
+      <input id="search" placeholder="Buscar cliente o teléfono">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Modelo</th>
+            <th>Color</th>
+            <th>Problema</th>
+            <th>Precio</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="repairsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <details>
+        <summary>📦 Ver historial de reparaciones completadas</summary>
+        <table class="details-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Modelo</th>
+              <th>Color</th>
+              <th>Problema</th>
+              <th>Precio</th>
+              <th>Responsable</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="completedTable"></tbody>
+        </table>
+      </details>
+    </div>
+
+  </main>
+</body>
+</html>
