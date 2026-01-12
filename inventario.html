@@ -112,6 +112,8 @@ details{ margin-top:12px; }
   let stock = [];
   let logs = [];
   let costs = [];
+  let showAllLogs = false;
+  const LOGS_PREVIEW = 5;
   let models = [
     'iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max',
     'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max',
@@ -277,15 +279,38 @@ addBtn.onclick = ()=>{
   }
 
   function renderLogs(){
-    const { items, total } = paginate(logs, logsPage);
-    logsT.innerHTML = items.map(l=>`
-      <tr>
-        <td>${l.date}</td>
-        <td>${l.model}</td>
-        <td>${l.action}</td>
-        <td>${l.qty}</td>
-      </tr>`).join('');
-    renderPager('logsPager','logs', total, logsPage);
+    const logsEl = document.getElementById('logs');
+    if(!logsEl) return;
+
+    if(showAllLogs){
+      // show paginated full list (newest first)
+      const reversed = logs.slice().reverse();
+      const { items, total } = paginate(reversed, logsPage);
+      logsEl.innerHTML = items.map(l=>`
+        <tr>
+          <td>${l.date}</td>
+          <td>${l.model}</td>
+          <td>${l.action}</td>
+          <td>${l.qty}</td>
+        </tr>`).join('');
+      renderPager('logsPager','logs', total, logsPage);
+      const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver menos';
+      const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = logs.length;
+      const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = '';
+    } else {
+      // show only last N entries (preview)
+      const preview = logs.slice(-LOGS_PREVIEW).reverse();
+      logsEl.innerHTML = preview.map(l=>`
+        <tr>
+          <td>${l.date}</td>
+          <td>${l.model}</td>
+          <td>${l.action}</td>
+          <td>${l.qty}</td>
+        </tr>`).join('');
+      const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = 'none';
+      const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver todo';
+      const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = Math.min(LOGS_PREVIEW, logs.length);
+    }
   }
 
   function renderCosts(){
@@ -304,6 +329,17 @@ addBtn.onclick = ()=>{
   function renderAll(){ renderInventory(); renderLogs(); renderCosts(); }
 
   search.oninput = ()=>{ invPage = 1; renderInventory(); };
+  // Attach toggle behavior after DOM is ready (button is inside a <details>)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const toggle = document.getElementById('toggleLogs');
+    if(toggle){
+      toggle.addEventListener('click', ()=>{
+        showAllLogs = !showAllLogs;
+        logsPage = 1;
+        renderLogs();
+      });
+    }
+  });
 </script>
   </head>
 <body>
@@ -366,20 +402,26 @@ addBtn.onclick = ()=>{
     <!-- Panel de historial -->
     <div class="panel">
       <h3>Historial de movimientos</h3>
-      <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Modelo</th>
-            <th>Acción</th>
-            <th>Cantidad</th>
-          </tr>
-        </thead>
-        <tbody id="logs"></tbody>
-      </table>
-      </div>
-      <div class="pager" id="logsPager"></div>
+      <details>
+        <summary>📋 Ver últimos movimientos</summary>
+        <div style="margin-top:8px; color:var(--muted); font-size:13px">
+          Mostrando <span id="logsCountPreview">5</span> últimos. <button id="toggleLogs" style="margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer">Ver todo</button>
+        </div>
+        <div class="table-responsive" style="margin-top:8px">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Modelo</th>
+              <th>Acción</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody id="logs"></tbody>
+        </table>
+        </div>
+        <div class="pager" id="logsPager"></div>
+      </details>
 
       <details>
         <summary>📊 Ver historial de costos (interno)</summary>
