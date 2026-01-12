@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Sistema Técnico</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      :root {
+        --bg: #020617;
+        --panel: #0f172a;
+        --border: #1e293b;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --primary: #38bdf8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+      }
+
+      /* Sidebar */
+      aside {
+        width: 240px;
+        background: #020617;
+        border-right: 1px solid var(--border);
+        padding: 20px;
+      }
+
+      aside h2 {
+        font-size: 18px;
+        margin-bottom: 30px;
+      }
+
+      nav a {
+        display: block;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        color: var(--text);
+        text-decoration: none;
+        background: transparent;
+      }
+
+      nav a:hover {
+        background: var(--panel);
+      }
+
+      /* Main */
+      main {
+        flex: 1;
+        padding: 24px;
+      }
+
+      /* Header */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      header span {
+        color: var(--muted);
+      }
+
+      /* Cards */
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+      }
+
+      .card {
+        background: linear-gradient(180deg, #0f172a, #020617);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      .card h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .card strong {
+        font-size: 28px;
+      }
+
+      /* Footer note */
+      .note {
+        margin-top: 30px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 800px) {
+        body { flex-direction: column; }
+        aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+        main { padding: 16px; }
+        nav a { display: inline-block; margin-right: 8px; }
+        header { margin-bottom: 16px; }
+        .cards { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+        .card { padding: 14px; }
+        input, select, button { width: 100%; margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <h2>📱 Sistema Técnico</h2>
+      <nav>
+        <a href="index.html">🏠 Dashboard</a>
+        <a href="inventario.html">🧾 Inventario</a>
+        <a href="reparaciones.html">🔧 Reparaciones</a>
+      </nav>
+    </aside>
+    <main>
+      <header>
+        <h1>Panel principal</h1>
+        <span id="fecha"></span>
+      </header>
+      <section class="cards">
+        <div class="card">
+          <h3>Reparaciones pendientes</h3>
+          <strong id="pendingCount">—</strong>
+        </div>
+        <div class="card">
+          <h3>En proceso</h3>
+          <strong id="inProcessCount">—</strong>
+        </div>
+        <div class="card">
+          <h3>Entregadas</h3>
+          <strong id="deliveredCount">—</strong>
+        </div>
+        <div class="card">
+          <h3>Unidades en stock</h3>
+          <strong id="totalStockCount">—</strong>
+          <div style="color:var(--muted); font-size:13px">Bajos en stock: <span id="lowStockCount">—</span></div>
+        </div>
+      </section>
+      <div class="note">Este panel se actualizará automáticamente con los datos del sistema.</div>
+    </main>
+    <script>
+      document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-NI', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    </script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+        authDomain: "control-de-inventario-633f5.firebaseapp.com",
+        databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+        projectId: "control-de-inventario-633f5",
+        storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+        messagingSenderId: "1012694355492",
+        appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const pendingEl = document.getElementById('pendingCount');
+      const inProcessEl = document.getElementById('inProcessCount');
+      const deliveredEl = document.getElementById('deliveredCount');
+      const totalStockEl = document.getElementById('totalStockCount');
+      const lowStockEl = document.getElementById('lowStockCount');
+
+      onValue(ref(db,'repairs'), snapshot=>{
+        const repairs = [];
+        snapshot.forEach(child=> repairs.push({ id: child.key, ...child.val() }));
+        const pending = repairs.filter(r => (r.status === 'Pendiente' || r.status === 'Pendiente') && !r.delivered).length;
+        const inProcess = repairs.filter(r => r.status === 'En Proceso' && !r.delivered).length;
+        const delivered = repairs.filter(r => r.delivered).length;
+        if(pendingEl) pendingEl.textContent = pending;
+        if(inProcessEl) inProcessEl.textContent = inProcess;
+        if(deliveredEl) deliveredEl.textContent = delivered;
+      });
+
+      const LOW_STOCK_THRESHOLD = 2;
+      onValue(ref(db,'stock'), snapshot=>{
+        let total = 0;
+        let lowCount = 0;
+        snapshot.forEach(child=>{
+          const v = child.val();
+          const q = parseInt(v.qty) || 0;
+          total += q;
+          if(q <= LOW_STOCK_THRESHOLD) lowCount += 1;
+        });
+        if(totalStockEl) totalStockEl.textContent = total;
+        if(lowStockEl) lowStockEl.textContent = lowCount;
+      });
+    </script>
+  </body>
+</html>
