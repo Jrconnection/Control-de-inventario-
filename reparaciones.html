@@ -1,4 +1,6 @@
-<!doctype html>
+
+  >
+            <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -112,6 +114,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   const db = getDatabase(app);
 
   let repairs = [];
+  let editingId = null;
 
   // Abrir WhatsApp con número y mensaje predefinido
   window.openWhatsApp = (phone, name)=>{
@@ -142,29 +145,70 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const model = document.getElementById('deviceModel').value.trim();
     const color = document.getElementById('deviceColor').value.trim();
     const issue = document.getElementById('issue').value.trim();
-    const price = parseFloat(document.getElementById('price').value.trim());
+    const priceRaw = document.getElementById('price').value.trim();
+    const price = priceRaw === '' ? null : parseFloat(priceRaw);
     const responsible = document.getElementById('responsible').value.trim();
 
-    if(!name || !phone || !model || !issue || !price || !responsible) {
+    if(!name || !phone || !model || !issue || !responsible) {
       alert("Todos los campos son obligatorios");
       return;
     }
 
-    const newRef = push(ref(db,'repairs'));
-    set(newRef,{
-      clientName: name,
-      clientPhone: phone,
-      model,
-      color,
-      issue,
-      price,
-      responsible,
-      status: "Pendiente",
-      delivered: false,
-      receivedAt: new Date().toLocaleString()
-    });
+    if(editingId){
+      update(ref(db,'repairs/'+editingId),{
+        clientName: name,
+        clientPhone: phone,
+        model,
+        color,
+        issue,
+        price: price === null ? null : price,
+        responsible
+      }).then(()=>{
+        editingId = null;
+        const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Agregar reparación';
+        const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = 'none';
+        document.getElementById('repairForm').reset();
+      });
+    } else {
+      const newRef = push(ref(db,'repairs'));
+      set(newRef,{
+        clientName: name,
+        clientPhone: phone,
+        model,
+        color,
+        issue,
+        price: price === null ? null : price,
+        responsible,
+        status: "Pendiente",
+        delivered: false,
+        receivedAt: new Date().toLocaleString()
+      });
+      document.getElementById('repairForm').reset();
+    }
+  }
 
+  // Iniciar edición: llenar formulario con datos existentes
+  window.startEdit = (id)=>{
+    const r = repairs.find(x=>x.id===id);
+    if(!r) return;
+    document.getElementById('clientName').value = r.clientName || '';
+    document.getElementById('clientPhone').value = r.clientPhone || '';
+    document.getElementById('deviceModel').value = r.model || '';
+    document.getElementById('deviceColor').value = r.color || '';
+    document.getElementById('issue').value = r.issue || '';
+    document.getElementById('price').value = (r.price != null) ? r.price : '';
+    document.getElementById('responsible').value = r.responsible || '';
+    editingId = id;
+    const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Guardar cambios';
+    const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  window.cancelEdit = ()=>{
+    editingId = null;
     document.getElementById('repairForm').reset();
+    const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Agregar reparación';
+    const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = 'none';
   }
 
   // Cambiar estado de reparación
@@ -190,9 +234,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.model}</td>
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
-          <td>${r.price}</td>
+          <td>${r.price==null?'-':r.price}</td>
           <td>${r.responsible}</td>
           <td><span class="badge ${r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':'completed'}">${r.status}</span></td>
+          <td><button onclick="startEdit('${r.id}')">Editar</button></td>
           <td>
             ${r.status!=='Completado'?`<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button><button onclick="updateStatus('${r.id}','Completado')">Completar</button>`:''}
             ${!r.delivered?`<button onclick="markDelivered('${r.id}')">Entregar</button>`:''}
@@ -209,9 +254,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.model}</td>
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
-          <td>${r.price}</td>
+          <td>${r.price==null?'-':r.price}</td>
           <td>${r.responsible}</td>
           <td><span class="badge completed">Completado</span></td>
+          <td><button onclick="startEdit('${r.id}')">Editar</button></td>
         </tr>`).join('');
   }
 
@@ -240,7 +286,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <input id="issue" placeholder="Problema / Reparación">
         <input id="price" placeholder="Precio">
         <input id="responsible" placeholder="Encargado">
-        <button type="submit">Agregar reparación</button>
+        <button id="submitRepair" type="submit">Agregar reparación</button>
+        <button id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none; margin-left:8px; background:transparent; border:1px solid var(--border);">Cancelar</button>
       </form>
     </div>
 
@@ -258,8 +305,9 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
             <th>Precio</th>
             <th>Responsable</th>
             <th>Estado</th>
+            <th>Editar</th>
             <th>Acciones</th>
-          </tr>
+              </tr>
         </thead>
         <tbody id="repairsTable"></tbody>
       </table>
@@ -271,15 +319,16 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <table class="details-table">
           <thead>
             <tr>
-              <th>Cliente</th>
-              <th>Teléfono</th>
-              <th>Modelo</th>
-              <th>Color</th>
-              <th>Problema</th>
-              <th>Precio</th>
-              <th>Responsable</th>
-              <th>Estado</th>
-            </tr>
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Modelo</th>
+                <th>Color</th>
+                <th>Problema</th>
+                <th>Precio</th>
+                <th>Responsable</th>
+                <th>Estado</th>
+                <th>Editar</th>
+              </tr>
           </thead>
           <tbody id="completedTable"></tbody>
         </table>
