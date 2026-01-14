@@ -331,6 +331,7 @@ addBtn.onclick = ()=>{
           <td>${l.model}</td>
           <td>${l.action}</td>
           <td>${l.qty}</td>
+          <td>${l.authorizer||'-'}</td>
         </tr>`).join('');
       renderPager('logsPager','logs', total, logsPage);
       const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver menos';
@@ -345,6 +346,7 @@ addBtn.onclick = ()=>{
           <td>${l.model}</td>
           <td>${l.action}</td>
           <td>${l.qty}</td>
+          <td>${l.authorizer||'-'}</td>
         </tr>`).join('');
       const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = 'none';
       const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver todo';
@@ -454,6 +456,7 @@ addBtn.onclick = ()=>{
               <th>Modelo</th>
               <th>Acción</th>
               <th>Cantidad</th>
+              <th>Autorizó</th>
             </tr>
           </thead>
           <tbody id="logs"></tbody>
