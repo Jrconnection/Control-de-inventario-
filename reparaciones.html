@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -27,7 +28,7 @@ body{
   background: linear-gradient(135deg,#020617,#0f172a);
   color:var(--text);
   display:flex;
-  min-height:100dvh; /* 🔥 clave para iPhone */
+  min-height:100dvh;
 }
 main{
   flex:1;
@@ -36,36 +37,45 @@ main{
   background: transparent;
 }
 
-      /* Sidebar */
-      aside {
-        width: 240px;
-        background: #020617;
-        border-right: 1px solid var(--border);
-        padding: 20px;
-      }
+/* Sidebar */
+aside {
+  width: 240px;
+  background: #020617;
+  border-right: 1px solid var(--border);
+  padding: 20px;
+}
+aside h2 { font-size: 18px; margin-bottom: 30px; }
+nav a {
+  display: block;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  background: transparent;
+}
+nav a:hover { background: var(--panel); }
 
-      aside h2 {
-        font-size: 18px;
-        margin-bottom: 30px;
-      }
-
-      nav a {
-        display: block;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        border-radius: 10px;
-        color: var(--text);
-        text-decoration: none;
-        background: transparent;
-      }
-
-      nav a:hover {
-        background: var(--panel);
-      }
-main{ flex:1; padding:20px; overflow:auto; }
-.panel{ background:linear-gradient(180deg,var(--panel),var(--panel-soft)); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:20px; }
-input,select,button{ padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#020617; color:var(--text); }
-button{ background:var(--primary); color:#020617; font-weight:600; cursor:pointer; }
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel-soft));
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+}
+input,select,button{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+}
+button{
+  background:var(--primary);
+  color:#020617;
+  font-weight:600;
+  cursor:pointer;
+}
 button:hover{ background:var(--primary-hover) }
 table{ width:100%; border-collapse:collapse; margin-top:12px; }
 th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
@@ -76,10 +86,71 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 .details-table th, .details-table td{ padding:8px; font-size:14px; }
 .whatsapp-link{ color:var(--primary); text-decoration:none; font-weight:600 }
 .whatsapp-link:hover{ text-decoration:underline }
-</style>
 
-<style>
-/* Responsive tweaks for reparaciones.html */
+/* Modal (repuestos) */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:16px;
+}
+.modal{
+  width:min(760px, 100%);
+  background:#0f172a;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+}
+.modal h3{ margin:0 0 8px 0; }
+.modal .muted{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+.modal-grid{
+  display:grid;
+  grid-template-columns: 1.2fr .7fr .6fr;
+  gap:10px;
+  align-items:end;
+}
+.modal-grid label{ font-size:13px; color:var(--muted); display:block; margin-bottom:6px; }
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:14px;
+}
+.btn-ghost{
+  background:transparent !important;
+  color:var(--text) !important;
+  border:1px solid var(--border) !important;
+}
+.small{
+  font-size:12px;
+  padding:6px 8px;
+  border-radius:10px;
+}
+.pill{
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--border);
+  background:#020617;
+  padding:8px 10px;
+  border-radius:12px;
+}
+.pill b{ font-weight:700; }
+.pill .x{
+  cursor:pointer;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:2px 8px;
+  background:transparent;
+  color:var(--text);
+}
+.pills-wrap{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+
+/* Responsive */
 @media (max-width: 800px) {
   body { flex-direction: column; }
   aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
@@ -90,85 +161,116 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   .panel { overflow-x: auto; }
   table { min-width: 600px; }
   .details-table th, .details-table td { font-size: 13px; }
+  .modal-grid{ grid-template-columns: 1fr; }
 }
 </style>
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-  import { getDatabase, ref, onValue, push, set, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+  import { getDatabase, ref, onValue, push, set, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
-  authDomain: "control-de-inventario-633f5.firebaseapp.com",
-  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
-  projectId: "control-de-inventario-633f5",
-  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
-  messagingSenderId: "1012694355492",
-  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+    authDomain: "control-de-inventario-633f5.firebaseapp.com",
+    databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+    projectId: "control-de-inventario-633f5",
+    storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+    messagingSenderId: "1012694355492",
+    appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
   let repairs = [];
+  let stock = [];
   let editingId = null;
-  // Lista de personal predeterminada — edítala según necesites
-    const staffList = ['Grethel','Ashly','Fergie','Jamil','Jonathan','Engell','Geovany'];
-    // Sólo estos son técnicos que pueden ser asignados
-    const techList = ['Jonathan','Engell','Geovany'];
 
-  // Llenar selects de personal cuando el DOM esté listo
+  const staffList = ['Grethel','Ashly','Fergie','Jamil','Jonathan','Engell','Geovany'];
+  const techList  = ['Jonathan','Engell','Geovany'];
+  const authorizers = ['Jamil','Jonathan'];
+
+  // Modal state
+  let currentRepair = null;
+  let selectedParts = [];
+
+  // DOM refs (se asignan al cargar DOM)
+  let searchInput = null;
+  let repairsTable = null;
+  let completedTable = null;
+
   function populateStaffSelects(){
     const selAssigned = document.getElementById('assignedTo');
     const selReceived = document.getElementById('receivedBy');
     if(!selAssigned || !selReceived) return;
-    const placeholderA = document.createElement('option'); placeholderA.value=''; placeholderA.textContent='-- Asignado a --'; placeholderA.setAttribute('data-placeholder','1');
-    const placeholderR = document.createElement('option'); placeholderR.value=''; placeholderR.textContent='-- Recibió --'; placeholderR.setAttribute('data-placeholder','1');
-    selAssigned.innerHTML = ''; selReceived.innerHTML = '';
+
+    selAssigned.innerHTML = '';
+    selReceived.innerHTML = '';
+
+    const placeholderR = document.createElement('option');
+    placeholderR.value = '';
+    placeholderR.textContent = '-- Recibió --';
     selReceived.appendChild(placeholderR);
+
+    const placeholderA = document.createElement('option');
+    placeholderA.value = '';
+    placeholderA.textContent = '-- Asignado a --';
     selAssigned.appendChild(placeholderA);
-      // Recibió: todos
-      staffList.forEach(name=>{
-        const o = document.createElement('option'); o.value = name; o.textContent = name;
-        selReceived.appendChild(o);
-      });
-      // Asignado: sólo técnicos
-      techList.forEach(name=>{
-        const o = document.createElement('option'); o.value = name; o.textContent = name;
-        selAssigned.appendChild(o);
-      });
+
+    staffList.forEach(name=>{
+      const o = document.createElement('option'); o.value = name; o.textContent = name;
+      selReceived.appendChild(o);
+    });
+
+    techList.forEach(name=>{
+      const o = document.createElement('option'); o.value = name; o.textContent = name;
+      selAssigned.appendChild(o);
+    });
   }
 
-  // Abrir WhatsApp con número y mensaje predefinido
   window.openWhatsApp = (phone, name)=>{
     const digits = (phone||'').toString().replace(/\D/g,'');
     if(!digits){ alert('Número inválido'); return; }
     const message = `Hola ${name||''}, te escribo sobre el avance de tu reparación.`;
     const url = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
-  }
+  };
 
-  const searchInput = document.getElementById('search');
-  const repairsTable = document.getElementById('repairsTable');
-  const completedTable = document.getElementById('completedTable');
+  // --------------------
+  // LISTENERS FIREBASE
+  // --------------------
+  onValue(ref(db,'stock'), snapshot=>{
+    stock = [];
+    snapshot.forEach(child=>{
+      stock.push({ id: child.key, ...child.val() });
+    });
 
-  // Escuchar reparaciones
+    // si el modal está abierto, refrescar lista filtrada
+    const modal = document.getElementById('partsModal');
+    if(modal && modal.style.display === 'flex'){
+      refreshStockSelect();
+    }
+  });
+
   onValue(ref(db,'repairs'), snapshot=>{
     repairs = [];
     snapshot.forEach(child=>{
       repairs.push({id: child.key, ...child.val()});
     });
-    // Normalizar campos antiguos: `responsible` -> `assignedTo`
+
     repairs = repairs.map(r=>({
       ...r,
       assignedTo: r.assignedTo || r.responsible || '',
-      receivedBy: r.receivedBy || ''
+      receivedBy: r.receivedBy || '',
+      partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
     }));
-    render();
+
+    render(); // ahora render es seguro si DOM no está listo
   });
 
-  // Función para agregar reparación
+  // --------------------
+  // CRUD REPARACIONES
+  // --------------------
   window.addRepair = ()=>{
     const name = document.getElementById('clientName').value.trim();
     const phone = document.getElementById('clientPhone').value.trim();
@@ -189,12 +291,9 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       update(ref(db,'repairs/'+editingId),{
         clientName: name,
         clientPhone: phone,
-        model,
-        color,
-        issue,
+        model, color, issue,
         price: price === null ? null : price,
-        assignedTo,
-        receivedBy
+        assignedTo, receivedBy
       }).then(()=>{
         editingId = null;
         const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Agregar reparación';
@@ -206,73 +305,260 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       set(newRef,{
         clientName: name,
         clientPhone: phone,
-        model,
-        color,
-        issue,
+        model, color, issue,
         price: price === null ? null : price,
-        assignedTo,
-        receivedBy,
+        assignedTo, receivedBy,
         status: "Pendiente",
         delivered: false,
-        receivedAt: new Date().toLocaleString()
+        receivedAt: new Date().toLocaleString(),
+        partsUsed: []
       });
       document.getElementById('repairForm').reset();
     }
-  }
+  };
 
-  // Iniciar edición: llenar formulario con datos existentes
   window.startEdit = (id)=>{
     const r = repairs.find(x=>x.id===id);
     if(!r) return;
+
     document.getElementById('clientName').value = r.clientName || '';
     document.getElementById('clientPhone').value = r.clientPhone || '';
     document.getElementById('deviceModel').value = r.model || '';
     document.getElementById('deviceColor').value = r.color || '';
     document.getElementById('issue').value = r.issue || '';
     document.getElementById('price').value = (r.price != null) ? r.price : '';
-    // Asegurar que el valor asignado exista en la lista de técnicos; si no, añadirlo temporalmente
+
     const selAssigned = document.getElementById('assignedTo');
     const selReceived = document.getElementById('receivedBy');
+
     if(r.assignedTo){
       if(!selAssigned.querySelector(`option[value="${r.assignedTo}"]`)){
         const o = document.createElement('option'); o.value = r.assignedTo; o.textContent = r.assignedTo;
         selAssigned.appendChild(o);
       }
       selAssigned.value = r.assignedTo;
-    } else {
-      selAssigned.value = '';
-    }
+    } else selAssigned.value = '';
+
     selReceived.value = r.receivedBy || '';
     editingId = id;
+
     const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Guardar cambios';
     const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  };
 
   window.cancelEdit = ()=>{
     editingId = null;
     document.getElementById('repairForm').reset();
     const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Agregar reparación';
     const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = 'none';
+  };
+
+  window.updateStatus = (id,newStatus)=> update(ref(db,'repairs/'+id), {status: newStatus});
+  window.markDelivered = (id)=> update(ref(db,'repairs/'+id), {delivered:true});
+
+  // ---------------------------
+  // MODAL: USAR REPUESTOS
+  // ---------------------------
+  function openPartsModal(repairId){
+    const r = repairs.find(x=>x.id===repairId);
+    if(!r) return;
+
+    currentRepair = r;
+    selectedParts = [];
+    renderSelectedParts();
+
+    const stockSearch = document.getElementById('stockSearch');
+    if(stockSearch) stockSearch.value = '';
+
+    refreshStockSelect();
+    refreshAuthorizerSelect();
+
+    document.getElementById('partsTitle').textContent = `Usar repuestos en: ${r.clientName} (${r.model})`;
+    document.getElementById('partsModal').style.display = 'flex';
+  }
+  window.openPartsModal = openPartsModal;
+
+  function closePartsModal(){
+    document.getElementById('partsModal').style.display = 'none';
+    currentRepair = null;
+    selectedParts = [];
+  }
+  window.closePartsModal = closePartsModal;
+
+  function refreshStockSelect(){
+    const sel = document.getElementById('stockSelect');
+    const q = (document.getElementById('stockSearch')?.value || '').toLowerCase().trim();
+    if(!sel) return;
+
+    const available = stock
+      .filter(i => (i.qty||0) > 0)
+      .filter(i => {
+        if(!q) return true;
+        const text = `${i.model||''} ${i.type||''} ${i.desc||''}`.toLowerCase();
+        return text.includes(q);
+      })
+      .sort((a,b)=> (a.model||'').localeCompare(b.model||''));
+
+    sel.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = available.length ? '-- Seleccionar item del inventario --' : 'Sin resultados';
+    sel.appendChild(ph);
+
+    available.forEach(i=>{
+      const o = document.createElement('option');
+      o.value = i.id;
+      o.textContent = `${i.model} • ${i.type} • ${(i.desc||'-')} (Stock: ${i.qty})`;
+      sel.appendChild(o);
+    });
   }
 
-  // Cambiar estado de reparación
-  window.updateStatus = (id,newStatus)=>{
-    update(ref(db,'repairs/'+id), {status: newStatus});
+  function refreshAuthorizerSelect(){
+    const sel = document.getElementById('authSelect');
+    if(!sel) return;
+    sel.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = '-- Autorizó --';
+    sel.appendChild(ph);
+    authorizers.forEach(a=>{
+      const o = document.createElement('option');
+      o.value = a; o.textContent = a;
+      sel.appendChild(o);
+    });
   }
 
-  // Marcar como entregado
-  window.markDelivered = (id)=>{
-    update(ref(db,'repairs/'+id), {delivered:true});
+  window.addPartLine = ()=>{
+    const stockId = document.getElementById('stockSelect').value;
+    const qty = parseInt(document.getElementById('partQty').value);
+
+    if(!stockId){ alert('Selecciona un item del inventario'); return; }
+    if(!qty || qty <= 0){ alert('Ingresa una cantidad válida'); return; }
+
+    const item = stock.find(x=>x.id===stockId);
+    if(!item){ alert('Item no encontrado'); return; }
+    if((item.qty||0) < qty){ alert('Stock insuficiente'); return; }
+
+    const existing = selectedParts.find(p=>p.stockId===stockId);
+    if(existing){
+      if((item.qty||0) < (existing.qty + qty)){
+        alert('Stock insuficiente para sumar esa cantidad');
+        return;
+      }
+      existing.qty += qty;
+    } else {
+      selectedParts.push({
+        stockId,
+        model: item.model || '',
+        type: item.type || '',
+        desc: item.desc || '',
+        qty
+      });
+    }
+
+    document.getElementById('stockSelect').value = '';
+    document.getElementById('partQty').value = '';
+    renderSelectedParts();
+  };
+
+  function renderSelectedParts(){
+    const wrap = document.getElementById('selectedParts');
+    if(!wrap) return;
+
+    if(selectedParts.length === 0){
+      wrap.innerHTML = '<div class="muted">Aún no has agregado repuestos.</div>';
+      return;
+    }
+
+    wrap.innerHTML = `
+      <div class="pills-wrap">
+        ${selectedParts.map((p,idx)=>`
+          <div class="pill">
+            <div>
+              <div><b>${p.model}</b> <span style="color:var(--muted)">• ${p.type}</span></div>
+              <div style="color:var(--muted); font-size:12px">${p.desc||'-'}</div>
+            </div>
+            <div style="margin-left:auto; font-weight:700">x${p.qty}</div>
+            <button class="x" onclick="removeSelectedPart(${idx})">✕</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="muted" style="margin-top:8px">Tip: puedes agregar varios items antes de confirmar.</div>
+    `;
   }
 
+  window.removeSelectedPart = (idx)=>{
+    selectedParts.splice(idx,1);
+    renderSelectedParts();
+  };
+
+  window.confirmPartsUse = async ()=>{
+    if(!currentRepair){ alert('No hay reparación seleccionada'); return; }
+    if(selectedParts.length === 0){ alert('Agrega al menos un repuesto'); return; }
+
+    const authorizer = document.getElementById('authSelect').value;
+    if(!authorizer){ alert('Selecciona quién autorizó'); return; }
+
+    const when = new Date().toLocaleString();
+
+    try{
+      // 1) descontar stock con transacciones
+      for(const p of selectedParts){
+        const stockRef = ref(db, 'stock/' + p.stockId);
+        const result = await runTransaction(stockRef, (current)=>{
+          if(current == null) return current;
+          const currentQty = current.qty || 0;
+          if(currentQty < p.qty) return; // aborta
+          return { ...current, qty: currentQty - p.qty };
+        }, { applyLocally: false });
+
+        if(!result.committed){
+          alert(`Stock insuficiente al aplicar: ${p.model}. Intenta de nuevo.`);
+          return;
+        }
+      }
+
+      // 2) registrar logs (salida)
+      for(const p of selectedParts){
+        await set(push(ref(db,'logs')), {
+          date: when,
+          model: p.model,
+          action: 'Salida',
+          qty: p.qty,
+          authorizer,
+          repairId: currentRepair.id,
+          clientName: currentRepair.clientName || ''
+        });
+      }
+
+      // 3) guardar en reparación
+      const used = selectedParts.map(p=>({ ...p, date: when, authorizer }));
+      const already = Array.isArray(currentRepair.partsUsed) ? currentRepair.partsUsed : [];
+      await update(ref(db,'repairs/'+currentRepair.id), {
+        partsUsed: [...already, ...used]
+      });
+
+      closePartsModal();
+      alert('✅ Repuestos aplicados y stock descontado.');
+    } catch(err){
+      console.error(err);
+      alert('❌ Error aplicando repuestos. Revisa consola.');
+    }
+  };
+
+  // --------------------
+  // RENDER (SEGURO)
+  // --------------------
   function render(){
-    const s = searchInput.value.toLowerCase();
+    if(!repairsTable || !completedTable) return; // DOM aún no listo
+    const s = (searchInput?.value || '').toLowerCase();
 
-    // Reparaciones activas (Pendiente o En Proceso)
     repairsTable.innerHTML = repairs
-      .filter(r=>!r.delivered && (!s || r.clientName.toLowerCase().includes(s) || r.clientPhone.includes(s)))
-      .map(r=>`
+      .filter(r=>!r.delivered && (!s || (r.clientName||'').toLowerCase().includes(s) || (r.clientPhone||'').includes(s)))
+      .map(r=>{
+        const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+        return `
         <tr>
           <td>${r.clientName}</td>
           <td><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
@@ -285,15 +571,22 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td><span class="badge ${r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':'completed'}">${r.status}</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
           <td>
-            ${r.status!=='Completado'?`<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button><button onclick="updateStatus('${r.id}','Completado')">Completar</button>`:''}
-            ${!r.delivered?`<button onclick="markDelivered('${r.id}')">Entregar</button>`:''}
+            ${r.status!=='Completado'
+              ? `<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button>
+                 <button onclick="updateStatus('${r.id}','Completado')">Completar</button>`
+              : ''
+            }
+            ${!r.delivered ? `<button onclick="markDelivered('${r.id}')">Entregar</button>` : ''}
+            <button class="small" onclick="openPartsModal('${r.id}')">Usar repuestos ${partsCount?`(${partsCount})`:''}</button>
           </td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
 
-    // Reparaciones completadas
     completedTable.innerHTML = repairs
       .filter(r=>r.delivered)
-      .map(r=>`
+      .map(r=>{
+        const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+        return `
         <tr>
           <td>${r.clientName}</td>
           <td><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
@@ -305,24 +598,47 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.assignedTo||'-'}</td>
           <td><span class="badge completed">Completado</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
-        </tr>`).join('');
+          <td><button class="small" onclick="openPartsModal('${r.id}')">Repuestos ${partsCount?`(${partsCount})`:''}</button></td>
+        </tr>`;
+      }).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', ()=>{ populateStaffSelects(); });
-  searchInput.oninput = render;
+  // DOM READY
+  document.addEventListener('DOMContentLoaded', ()=>{
+    // cache DOM
+    searchInput = document.getElementById('search');
+    repairsTable = document.getElementById('repairsTable');
+    completedTable = document.getElementById('completedTable');
 
+    populateStaffSelects();
+    if(searchInput) searchInput.oninput = render;
+
+    // buscador en vivo dentro del modal
+    const stockSearch = document.getElementById('stockSearch');
+    if(stockSearch) stockSearch.addEventListener('input', refreshStockSelect);
+
+    // cerrar modal tocando afuera
+    const overlay = document.getElementById('partsModal');
+    overlay?.addEventListener('click', (e)=>{
+      if(e.target === overlay) closePartsModal();
+    });
+
+    // ahora sí pintar si ya habían llegado datos
+    render();
+  });
 </script>
 
 </head>
 <body>
   <aside>
-      <h2>📱 Sistema Técnico</h2>
-      <nav>
-        <a href="index.html">🏠 Dashboard</a>
-        <a href="inventario.html">🧾 Inventario</a>
-        <a href="reparaciones.html">🔧 Reparaciones</a>
-      </nav>
-    </aside>
+    <h2>📱 Sistema Técnico</h2>
+    <nav>
+      <a href="index.html">🏠 Dashboard</a>
+      <a href="inventario.html">🧾 Inventario</a>
+      <a href="reparaciones.html" style="background:#0f172a">🔧 Reparaciones</a>
+    </nav>
+  </aside>
+
   <main>
     <h2>Registrar reparación</h2>
     <div class="panel">
@@ -333,8 +649,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <input id="deviceColor" placeholder="Color (opcional)">
         <input id="issue" placeholder="Problema / Reparación">
         <input id="price" placeholder="Precio">
-          <select id="receivedBy"><option data-placeholder value="">-- Recibió --</option></select>
-          <select id="assignedTo"><option data-placeholder value="">-- Asignado a --</option></select>
+        <select id="receivedBy"><option value="">-- Recibió --</option></select>
+        <select id="assignedTo"><option value="">-- Asignado a --</option></select>
         <button id="submitRepair" type="submit">Agregar reparación</button>
         <button id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none; margin-left:8px; background:transparent; border:1px solid var(--border);">Cancelar</button>
       </form>
@@ -357,7 +673,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
             <th>Estado</th>
             <th>Editar</th>
             <th>Acciones</th>
-              </tr>
+          </tr>
         </thead>
         <tbody id="repairsTable"></tbody>
       </table>
@@ -369,23 +685,68 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <table class="details-table">
           <thead>
             <tr>
-                <th>Cliente</th>
-                <th>Teléfono</th>
-                <th>Modelo</th>
-                <th>Color</th>
-                <th>Problema</th>
-                <th>Precio</th>
-                <th>Recibió</th>
-                <th>Asignado</th>
-                <th>Estado</th>
-                <th>Editar</th>
-              </tr>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Modelo</th>
+              <th>Color</th>
+              <th>Problema</th>
+              <th>Precio</th>
+              <th>Recibió</th>
+              <th>Asignado</th>
+              <th>Estado</th>
+              <th>Editar</th>
+              <th>Repuestos</th>
+            </tr>
           </thead>
           <tbody id="completedTable"></tbody>
         </table>
       </details>
     </div>
-
   </main>
+
+  <!-- ✅ Modal Repuestos -->
+  <div class="modal-overlay" id="partsModal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="partsTitle">Usar repuestos</h3>
+      <div class="muted">
+        Busca por modelo/tipo/desc, agrega items con cantidad y confirma.
+        Se registrará como salida y se guardará en la reparación.
+      </div>
+
+      <div class="modal-grid">
+        <div>
+          <label>Buscar repuesto</label>
+          <input id="stockSearch" placeholder="Ej: iPhone 11, batería, OLED...">
+        </div>
+
+        <div style="grid-column: 2 / span 2;">
+          <label>Item del inventario</label>
+          <select id="stockSelect"></select>
+        </div>
+
+        <div>
+          <label>Cantidad</label>
+          <input id="partQty" type="number" min="1" placeholder="Ej: 1">
+        </div>
+
+        <div>
+          <button type="button" onclick="addPartLine()">Agregar</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:6px">Autorizó</label>
+        <select id="authSelect"></select>
+      </div>
+
+      <div id="selectedParts" style="margin-top:10px"></div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" type="button" onclick="closePartsModal()">Cancelar</button>
+        <button type="button" onclick="confirmPartsUse()">Confirmar salida</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
