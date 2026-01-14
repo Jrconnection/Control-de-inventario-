@@ -197,30 +197,69 @@ addBtn.onclick = ()=>{
 
 
   window.move = (id, dir)=>{
-    const qty = parseInt(prompt('Cantidad'));
-    if(!qty || qty <= 0) return;
-
     const item = stock.find(i=>i.id===id);
-    if(dir==='out' && item.qty<qty){
-      alert('Stock insuficiente');
+    if(!item) return;
+    if(dir === 'out'){
+      // Diálogo para salida que pide cantidad y autorizador
+      showOutDialog(item, (qty, authorizer) => {
+        if(!qty || qty <= 0) return;
+        if(item.qty < qty){ alert('Stock insuficiente'); return; }
+        if(!authorizer){ alert('Selecciona un autorizador'); return; }
+        set(push(ref(db,'logs')), {
+          date: new Date().toLocaleString(),
+          model: item.model,
+          action: 'Salida',
+          qty,
+          authorizer
+        });
+        update(ref(db,'stock/'+id), { qty: item.qty - qty });
+      });
       return;
     }
 
-    if(dir==='in'){
-      const price = parseFloat(prompt('Precio unitario de compra'));
-      if(!price || price <=0) return;
-      const newCost = { date: new Date().toLocaleString(), model:item.model, qty, price, total: qty*price };
-      set(push(ref(db,'costs')), newCost);
-    }
-
+    // Entrada
+    const qty = parseInt(prompt('Cantidad'));
+    if(!qty || qty <= 0) return;
+    const price = parseFloat(prompt('Precio unitario de compra'));
+    if(!price || price <=0) return;
+    const newCost = { date: new Date().toLocaleString(), model:item.model, qty, price, total: qty*price };
+    set(push(ref(db,'costs')), newCost);
     set(push(ref(db,'logs')), {
       date: new Date().toLocaleString(),
       model: item.model,
-      action: dir==='in'?'Entrada':'Salida',
+      action: 'Entrada',
       qty
     });
+    update(ref(db,'stock/'+id), { qty: item.qty + qty });
+  }
 
-    update(ref(db,'stock/'+id), { qty: dir==='in'?item.qty+qty:item.qty-qty });
+  // Autorizadores permitidos
+  const authorizers = ['Jamil','Jonathan'];
+
+  function showOutDialog(item, cb){
+    if(document.getElementById('outModal')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'outModal';
+    overlay.style.position = 'fixed'; overlay.style.inset = 0; overlay.style.background = 'rgba(0,0,0,.4)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center'; overlay.style.zIndex=9999;
+    const box = document.createElement('div');
+    box.style.background = '#0f172a'; box.style.border = '1px solid #1e293b'; box.style.padding = '18px'; box.style.borderRadius='10px'; box.style.color = 'var(--text)'; box.style.minWidth='320px';
+    box.innerHTML = `<div style="margin-bottom:8px;font-weight:700">Salida autorizada</div><div style="margin-bottom:8px">Modelo: ${item.model}</div>`;
+    const qtyInput = document.createElement('input'); qtyInput.type='number'; qtyInput.placeholder='Cantidad'; qtyInput.style.width='100%'; qtyInput.style.marginBottom='8px'; qtyInput.min=1;
+    const select = document.createElement('select'); select.style.width='100%'; select.style.marginBottom='10px';
+    const ph = document.createElement('option'); ph.value=''; ph.textContent='-- Seleccionar autorizador --'; select.appendChild(ph);
+    authorizers.forEach(a=>{ const o=document.createElement('option'); o.value=a; o.textContent=a; select.appendChild(o); });
+    const btnRow = document.createElement('div'); btnRow.style.display='flex'; btnRow.style.gap='8px'; btnRow.style.justifyContent='flex-end';
+    const cancel = document.createElement('button'); cancel.textContent='Cancelar'; cancel.style.background='transparent'; cancel.style.border='1px solid var(--border)'; cancel.onclick = ()=>{ document.body.removeChild(overlay); cb(null); };
+    const confirm = document.createElement('button'); confirm.textContent='Confirmar'; confirm.onclick = ()=>{
+      const qty = parseInt(qtyInput.value);
+      const auth = select.value;
+      if(!qty || qty <= 0){ alert('Ingresa una cantidad válida'); return; }
+      document.body.removeChild(overlay);
+      cb(qty, auth);
+    };
+    btnRow.appendChild(cancel); btnRow.appendChild(confirm);
+    box.appendChild(qtyInput); box.appendChild(select); box.appendChild(btnRow);
+    overlay.appendChild(box); document.body.appendChild(overlay);
   }
 
   window.removeItem = (id)=>{
