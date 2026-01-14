@@ -1,6 +1,4 @@
-
-  >
-            <!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -26,7 +24,7 @@
 body{
   margin:0;
   font-family:system-ui,sans-serif;
-  background: var(--bg); /* color sólido */
+  background: linear-gradient(135deg,#020617,#0f172a);
   color:var(--text);
   display:flex;
   min-height:100dvh; /* 🔥 clave para iPhone */
@@ -35,7 +33,7 @@ main{
   flex:1;
   padding:20px;
   overflow:auto;
-  background: linear-gradient(135deg,#020617,#0f172a);
+  background: transparent;
 }
 
       /* Sidebar */
@@ -115,6 +113,32 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 
   let repairs = [];
   let editingId = null;
+  // Lista de personal predeterminada — edítala según necesites
+    const staffList = ['Grethel','Ashly','Fergie','Jamil','Jonathan','Engell','Geovany'];
+    // Sólo estos son técnicos que pueden ser asignados
+    const techList = ['Jonathan','Engell','Geovany'];
+
+  // Llenar selects de personal cuando el DOM esté listo
+  function populateStaffSelects(){
+    const selAssigned = document.getElementById('assignedTo');
+    const selReceived = document.getElementById('receivedBy');
+    if(!selAssigned || !selReceived) return;
+    const placeholderA = document.createElement('option'); placeholderA.value=''; placeholderA.textContent='-- Asignado a --'; placeholderA.setAttribute('data-placeholder','1');
+    const placeholderR = document.createElement('option'); placeholderR.value=''; placeholderR.textContent='-- Recibió --'; placeholderR.setAttribute('data-placeholder','1');
+    selAssigned.innerHTML = ''; selReceived.innerHTML = '';
+    selReceived.appendChild(placeholderR);
+    selAssigned.appendChild(placeholderA);
+      // Recibió: todos
+      staffList.forEach(name=>{
+        const o = document.createElement('option'); o.value = name; o.textContent = name;
+        selReceived.appendChild(o);
+      });
+      // Asignado: sólo técnicos
+      techList.forEach(name=>{
+        const o = document.createElement('option'); o.value = name; o.textContent = name;
+        selAssigned.appendChild(o);
+      });
+  }
 
   // Abrir WhatsApp con número y mensaje predefinido
   window.openWhatsApp = (phone, name)=>{
@@ -135,6 +159,12 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     snapshot.forEach(child=>{
       repairs.push({id: child.key, ...child.val()});
     });
+    // Normalizar campos antiguos: `responsible` -> `assignedTo`
+    repairs = repairs.map(r=>({
+      ...r,
+      assignedTo: r.assignedTo || r.responsible || '',
+      receivedBy: r.receivedBy || ''
+    }));
     render();
   });
 
@@ -147,9 +177,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const issue = document.getElementById('issue').value.trim();
     const priceRaw = document.getElementById('price').value.trim();
     const price = priceRaw === '' ? null : parseFloat(priceRaw);
-    const responsible = document.getElementById('responsible').value.trim();
+    const assignedTo = document.getElementById('assignedTo').value.trim();
+    const receivedBy = document.getElementById('receivedBy').value.trim();
 
-    if(!name || !phone || !model || !issue || !responsible) {
+    if(!name || !phone || !model || !issue || !assignedTo || !receivedBy) {
       alert("Todos los campos son obligatorios");
       return;
     }
@@ -162,7 +193,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         color,
         issue,
         price: price === null ? null : price,
-        responsible
+        assignedTo,
+        receivedBy
       }).then(()=>{
         editingId = null;
         const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Agregar reparación';
@@ -178,7 +210,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         color,
         issue,
         price: price === null ? null : price,
-        responsible,
+        assignedTo,
+        receivedBy,
         status: "Pendiente",
         delivered: false,
         receivedAt: new Date().toLocaleString()
@@ -197,7 +230,19 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     document.getElementById('deviceColor').value = r.color || '';
     document.getElementById('issue').value = r.issue || '';
     document.getElementById('price').value = (r.price != null) ? r.price : '';
-    document.getElementById('responsible').value = r.responsible || '';
+    // Asegurar que el valor asignado exista en la lista de técnicos; si no, añadirlo temporalmente
+    const selAssigned = document.getElementById('assignedTo');
+    const selReceived = document.getElementById('receivedBy');
+    if(r.assignedTo){
+      if(!selAssigned.querySelector(`option[value="${r.assignedTo}"]`)){
+        const o = document.createElement('option'); o.value = r.assignedTo; o.textContent = r.assignedTo;
+        selAssigned.appendChild(o);
+      }
+      selAssigned.value = r.assignedTo;
+    } else {
+      selAssigned.value = '';
+    }
+    selReceived.value = r.receivedBy || '';
     editingId = id;
     const submit = document.getElementById('submitRepair'); if(submit) submit.textContent = 'Guardar cambios';
     const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = '';
@@ -235,7 +280,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
           <td>${r.price==null?'-':r.price}</td>
-          <td>${r.responsible}</td>
+          <td>${r.receivedBy||'-'}</td>
+          <td>${r.assignedTo||'-'}</td>
           <td><span class="badge ${r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':'completed'}">${r.status}</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
           <td>
@@ -255,12 +301,14 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
           <td>${r.price==null?'-':r.price}</td>
-          <td>${r.responsible}</td>
+          <td>${r.receivedBy||'-'}</td>
+          <td>${r.assignedTo||'-'}</td>
           <td><span class="badge completed">Completado</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
         </tr>`).join('');
   }
 
+  document.addEventListener('DOMContentLoaded', ()=>{ populateStaffSelects(); });
   searchInput.oninput = render;
 
 </script>
@@ -285,7 +333,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <input id="deviceColor" placeholder="Color (opcional)">
         <input id="issue" placeholder="Problema / Reparación">
         <input id="price" placeholder="Precio">
-        <input id="responsible" placeholder="Encargado">
+          <select id="receivedBy"><option data-placeholder value="">-- Recibió --</option></select>
+          <select id="assignedTo"><option data-placeholder value="">-- Asignado a --</option></select>
         <button id="submitRepair" type="submit">Agregar reparación</button>
         <button id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none; margin-left:8px; background:transparent; border:1px solid var(--border);">Cancelar</button>
       </form>
@@ -303,7 +352,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
             <th>Color</th>
             <th>Problema</th>
             <th>Precio</th>
-            <th>Responsable</th>
+            <th>Recibió</th>
+            <th>Asignado</th>
             <th>Estado</th>
             <th>Editar</th>
             <th>Acciones</th>
@@ -325,7 +375,8 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
                 <th>Color</th>
                 <th>Problema</th>
                 <th>Precio</th>
-                <th>Responsable</th>
+                <th>Recibió</th>
+                <th>Asignado</th>
                 <th>Estado</th>
                 <th>Editar</th>
               </tr>
