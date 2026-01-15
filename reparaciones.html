@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -83,6 +82,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 .pending{ background:rgba(250,204,21,.2); color:var(--yellow); }
 .inprogress{ background:rgba(59,130,246,.2); color:#3b82f6; }
 .completed{ background:rgba(34,197,94,.15); color:var(--green); }
+
+/* ✅ NUEVO: badge para cancelada */
+.cancelled{ background:rgba(239,68,68,.20); color:var(--red); }
+
 .details-table th, .details-table td{ padding:8px; font-size:14px; }
 .whatsapp-link{ color:var(--primary); text-decoration:none; font-weight:600 }
 .whatsapp-link:hover{ text-decoration:underline }
@@ -150,6 +153,72 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 }
 .pills-wrap{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 
+/* ============================
+   ✅ NUEVO: MENÚ ACCIONES (⋯)
+   ============================ */
+.actions-cell{ white-space:nowrap; }
+
+.actions-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+
+/* menú móvil */
+.actions-menu{
+  position:relative;
+  display:none; /* se activa en móvil por media query */
+}
+
+.actions-trigger{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.05);
+  color:var(--text);
+  font-size:20px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0;
+}
+
+.actions-dropdown{
+  position:absolute;
+  right:0;
+  top:44px;
+  min-width:200px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 14px 30px rgba(0,0,0,.35);
+  padding:6px;
+  display:none;
+  z-index:99999;
+}
+
+.actions-dropdown button{
+  width:100%;
+  text-align:left;
+  padding:10px 10px;
+  border-radius:10px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--text);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.actions-dropdown button:hover{
+  background:rgba(56,189,248,.12);
+  border-color:rgba(56,189,248,.18);
+}
+
 /* Responsive */
 @media (max-width: 800px) {
   body { flex-direction: column; }
@@ -162,6 +231,11 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   table { min-width: 600px; }
   .details-table th, .details-table td { font-size: 13px; }
   .modal-grid{ grid-template-columns: 1fr; }
+
+  /* ✅ En móvil: ocultar botones y usar menú */
+  .actions-wrap{ display:none !important; }
+  .actions-menu{ display:inline-block !important; }
+  .actions-trigger{ width:40px; height:40px; } /* un poquito más fácil de tocar */
 }
 </style>
 
@@ -198,6 +272,29 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   let searchInput = null;
   let repairsTable = null;
   let completedTable = null;
+
+  /* ============================
+     ✅ NUEVO: acciones menu JS
+     ============================ */
+  function closeAllActionMenus(exceptMenu){
+    document.querySelectorAll('.actions-dropdown').forEach(dd=>{
+      const menu = dd.closest('.actions-menu');
+      if(exceptMenu && menu === exceptMenu) return;
+      dd.style.display = 'none';
+    });
+  }
+
+  window.toggleActionsMenu = (id)=>{
+    const menu = document.getElementById('actionsMenu_' + id);
+    if(!menu) return;
+    const dd = menu.querySelector('.actions-dropdown');
+    if(!dd) return;
+
+    const isOpen = dd.style.display === 'block';
+    closeAllActionMenus(menu);
+    dd.style.display = isOpen ? 'none' : 'block';
+  };
+  /* ============================ */
 
   function populateStaffSelects(){
     const selAssigned = document.getElementById('assignedTo');
@@ -356,6 +453,30 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 
   window.updateStatus = (id,newStatus)=> update(ref(db,'repairs/'+id), {status: newStatus});
   window.markDelivered = (id)=> update(ref(db,'repairs/'+id), {delivered:true});
+
+  // ✅ NUEVO: cancelar / entregar sin reparar (sin borrar)
+  window.cancelRepair = (id)=>{
+    const r = repairs.find(x=>x.id===id);
+
+    // Motivo obligatorio
+    const reason = prompt('Motivo de cancelación / entrega sin reparar (ej: cliente desistió):');
+    if(reason === null) return;
+    const clean = reason.trim();
+    if(!clean){
+      alert('Debes escribir un motivo.');
+      return;
+    }
+
+    const name = r?.clientName || 'este cliente';
+    if(!confirm(`¿Confirmas ENTREGAR SIN REPARAR el equipo de ${name}?`)) return;
+
+    update(ref(db,'repairs/'+id), {
+      status: "Cancelado",
+      delivered: true,
+      deliveredAt: new Date().toLocaleString(),
+      cancelReason: clean
+    });
+  };
 
   // ---------------------------
   // MODAL: USAR REPUESTOS
@@ -558,6 +679,26 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       .filter(r=>!r.delivered && (!s || (r.clientName||'').toLowerCase().includes(s) || (r.clientPhone||'').includes(s)))
       .map(r=>{
         const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+
+        const badgeClass =
+          r.status==='Pendiente' ? 'pending' :
+          r.status==='En Proceso' ? 'inprogress' :
+          r.status==='Cancelado' ? 'cancelled' :
+          'completed';
+
+        const actionButtonsHTML = `
+          ${r.status!=='Completado'
+            ? `<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button>
+               <button onclick="updateStatus('${r.id}','Completado')">Completar</button>`
+            : ''
+          }
+          ${!r.delivered ? `<button onclick="markDelivered('${r.id}')">Entregar</button>` : ''}
+
+          ${!r.delivered ? `<button onclick="cancelRepair('${r.id}')" style="background:rgba(239,68,68,.20); color:var(--red); border:1px solid var(--border);">Entregar sin reparar</button>` : ''}
+
+          <button class="small" onclick="openPartsModal('${r.id}')">Usar repuestos ${partsCount?`(${partsCount})`:''}</button>
+        `;
+
         return `
         <tr>
           <td>${r.clientName}</td>
@@ -568,16 +709,23 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.price==null?'-':r.price}</td>
           <td>${r.receivedBy||'-'}</td>
           <td>${r.assignedTo||'-'}</td>
-          <td><span class="badge ${r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':'completed'}">${r.status}</span></td>
+          <td><span class="badge ${badgeClass}">${r.status}</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
-          <td>
-            ${r.status!=='Completado'
-              ? `<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button>
-                 <button onclick="updateStatus('${r.id}','Completado')">Completar</button>`
-              : ''
-            }
-            ${!r.delivered ? `<button onclick="markDelivered('${r.id}')">Entregar</button>` : ''}
-            <button class="small" onclick="openPartsModal('${r.id}')">Usar repuestos ${partsCount?`(${partsCount})`:''}</button>
+
+          <!-- ✅ MODIFICADO: acciones en menú móvil -->
+          <td class="actions-cell">
+            <!-- PC: botones normales -->
+            <div class="actions-wrap">
+              ${actionButtonsHTML}
+            </div>
+
+            <!-- Móvil: menú ⋯ -->
+            <div class="actions-menu" id="actionsMenu_${r.id}">
+              <button type="button" class="actions-trigger" onclick="toggleActionsMenu('${r.id}')">⋯</button>
+              <div class="actions-dropdown">
+                ${actionButtonsHTML}
+              </div>
+            </div>
           </td>
         </tr>`;
       }).join('');
@@ -586,6 +734,12 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       .filter(r=>r.delivered)
       .map(r=>{
         const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+
+        const isCancelled = (r.status === 'Cancelado');
+        const badge = isCancelled
+          ? `<span class="badge cancelled">Cancelado</span>`
+          : `<span class="badge completed">Completado</span>`;
+
         return `
         <tr>
           <td>${r.clientName}</td>
@@ -596,7 +750,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.price==null?'-':r.price}</td>
           <td>${r.receivedBy||'-'}</td>
           <td>${r.assignedTo||'-'}</td>
-          <td><span class="badge completed">Completado</span></td>
+          <td>${badge}</td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
           <td><button class="small" onclick="openPartsModal('${r.id}')">Repuestos ${partsCount?`(${partsCount})`:''}</button></td>
         </tr>`;
@@ -622,6 +776,19 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     overlay?.addEventListener('click', (e)=>{
       if(e.target === overlay) closePartsModal();
     });
+
+    /* ✅ NUEVO: cerrar menú de acciones al tocar fuera / scroll */
+    document.addEventListener('click', (e)=>{
+      // si tocas en el trigger, lo maneja toggleActionsMenu
+      if(e.target.closest('.actions-trigger')) return;
+      // si tocas dentro del dropdown, no lo cierres aquí
+      if(e.target.closest('.actions-dropdown')) return;
+      closeAllActionMenus();
+    }, true);
+
+    window.addEventListener('scroll', ()=> closeAllActionMenus(), { passive:true });
+    window.addEventListener('resize', ()=> closeAllActionMenus(), { passive:true });
+    /* ============================ */
 
     // ahora sí pintar si ya habían llegado datos
     render();
