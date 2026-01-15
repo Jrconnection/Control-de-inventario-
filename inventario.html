@@ -206,13 +206,17 @@ addBtn.onclick = ()=>{
         if(!qty || qty <= 0) return;
         if(item.qty < qty){ alert('Stock insuficiente'); return; }
         if(!authorizer){ alert('Selecciona un autorizador'); return; }
+
+        // ✅ CAMBIO: guardar también type en logs
         set(push(ref(db,'logs')), {
           date: new Date().toLocaleString(),
           model: item.model,
+          type: item.type,     // ✅ NUEVO
           action: 'Salida',
           qty,
           authorizer
         });
+
         update(ref(db,'stock/'+id), { qty: item.qty - qty });
       });
       return;
@@ -223,14 +227,20 @@ addBtn.onclick = ()=>{
     if(!qty || qty <= 0) return;
     const price = parseFloat(prompt('Precio unitario de compra'));
     if(!price || price <=0) return;
-    const newCost = { date: new Date().toLocaleString(), model:item.model, qty, price, total: qty*price };
+
+    // ✅ CAMBIO: guardar también type en costs
+    const newCost = { date: new Date().toLocaleString(), model:item.model, type:item.type, qty, price, total: qty*price };
     set(push(ref(db,'costs')), newCost);
+
+    // ✅ CAMBIO: guardar también type en logs
     set(push(ref(db,'logs')), {
       date: new Date().toLocaleString(),
       model: item.model,
+      type: item.type,     // ✅ NUEVO
       action: 'Entrada',
       qty
     });
+
     update(ref(db,'stock/'+id), { qty: item.qty + qty });
   }
 
@@ -332,14 +342,22 @@ addBtn.onclick = ()=>{
       // show paginated full list (newest first)
       const reversed = logs.slice().reverse();
       const { items, total } = paginate(reversed, logsPage);
-      logsEl.innerHTML = items.map(l=>`
-        <tr>
-          <td>${l.date}</td>
-          <td>${l.model}</td>
-          <td>${l.action}</td>
-          <td>${l.qty}</td>
-          <td>${l.authorizer||'-'}</td>
-        </tr>`).join('');
+
+      // ✅ CAMBIO: agregar columna Categoría (con fallback por si logs viejos no tienen type)
+      logsEl.innerHTML = items.map(l=>{
+        const t = l.type || (stock.find(s=>s.model===l.model)?.type) || '-';
+        return `
+          <tr>
+            <td>${l.date}</td>
+            <td>${l.model}</td>
+            <td><span class="badge ${t}">${t}</span></td>
+            <td>${l.action}</td>
+            <td>${l.qty}</td>
+            <td>${l.authorizer||'-'}</td>
+          </tr>
+        `;
+      }).join('');
+
       renderPager('logsPager','logs', total, logsPage);
       const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver menos';
       const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = logs.length;
@@ -347,14 +365,22 @@ addBtn.onclick = ()=>{
     } else {
       // show only last N entries (preview)
       const preview = logs.slice(-LOGS_PREVIEW).reverse();
-      logsEl.innerHTML = preview.map(l=>`
-        <tr>
-          <td>${l.date}</td>
-          <td>${l.model}</td>
-          <td>${l.action}</td>
-          <td>${l.qty}</td>
-          <td>${l.authorizer||'-'}</td>
-        </tr>`).join('');
+
+      // ✅ CAMBIO: agregar columna Categoría (con fallback por si logs viejos no tienen type)
+      logsEl.innerHTML = preview.map(l=>{
+        const t = l.type || (stock.find(s=>s.model===l.model)?.type) || '-';
+        return `
+          <tr>
+            <td>${l.date}</td>
+            <td>${l.model}</td>
+            <td><span class="badge ${t}">${t}</span></td>
+            <td>${l.action}</td>
+            <td>${l.qty}</td>
+            <td>${l.authorizer||'-'}</td>
+          </tr>
+        `;
+      }).join('');
+
       const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = 'none';
       const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver todo';
       const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = Math.min(LOGS_PREVIEW, logs.length);
@@ -363,14 +389,22 @@ addBtn.onclick = ()=>{
 
   function renderCosts(){
     const { items, total } = paginate(costs, costsPage);
-    costsT.innerHTML = items.map(c=>`
-      <tr>
-        <td>${c.date}</td>
-        <td>${c.model}</td>
-        <td>${c.qty}</td>
-        <td>${c.price}</td>
-        <td>${c.total}</td>
-      </tr>`).join('');
+
+    // ✅ CAMBIO: agregar columna Categoría (con fallback por si costs viejos no tienen type)
+    costsT.innerHTML = items.map(c=>{
+      const t = c.type || (stock.find(s=>s.model===c.model)?.type) || '-';
+      return `
+        <tr>
+          <td>${c.date}</td>
+          <td>${c.model}</td>
+          <td><span class="badge ${t}">${t}</span></td>
+          <td>${c.qty}</td>
+          <td>${c.price}</td>
+          <td>${c.total}</td>
+        </tr>
+      `;
+    }).join('');
+
     renderPager('costsPager','costs', total, costsPage);
   }
 
@@ -468,6 +502,7 @@ addBtn.onclick = ()=>{
             <tr>
               <th>Fecha</th>
               <th>Modelo</th>
+              <th>Categoría</th> <!-- ✅ NUEVO -->
               <th>Acción</th>
               <th>Cantidad</th>
               <th>Autorizó</th>
@@ -487,6 +522,7 @@ addBtn.onclick = ()=>{
             <tr>
               <th>Fecha</th>
               <th>Modelo</th>
+              <th>Categoría</th> <!-- ✅ NUEVO -->
               <th>Cantidad</th>
               <th>Precio unitario</th>
               <th>Total</th>
