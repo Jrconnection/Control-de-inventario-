@@ -228,14 +228,14 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   .panel { padding: 12px; }
   input, select, button { width: 100%; margin-top: 8px; }
   .panel { overflow-x: auto; }
-  table { min-width: 600px; }
+  table { min-width: 700px; }
   .details-table th, .details-table td { font-size: 13px; }
   .modal-grid{ grid-template-columns: 1fr; }
 
   /* ✅ En móvil: ocultar botones y usar menú */
   .actions-wrap{ display:none !important; }
   .actions-menu{ display:inline-block !important; }
-  .actions-trigger{ width:40px; height:40px; } /* un poquito más fácil de tocar */
+  .actions-trigger{ width:40px; height:40px; }
 }
 </style>
 
@@ -268,13 +268,31 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   let currentRepair = null;
   let selectedParts = [];
 
-  // DOM refs (se asignan al cargar DOM)
+  // DOM refs
   let searchInput = null;
   let repairsTable = null;
   let completedTable = null;
 
   /* ============================
-     ✅ NUEVO: acciones menu JS
+     ✅ Helpers
+     ============================ */
+  function nowLocalString(){
+    return new Date().toLocaleString();
+  }
+
+  function askDeliveredBy(){
+    const who = prompt('¿Quién entregó el teléfono? (nombre del staff)');
+    if(who === null) return null;
+    const clean = who.trim();
+    if(!clean){
+      alert('Debes escribir quién entregó.');
+      return null;
+    }
+    return clean;
+  }
+
+  /* ============================
+     ✅ Menú acciones móvil
      ============================ */
   function closeAllActionMenus(exceptMenu){
     document.querySelectorAll('.actions-dropdown').forEach(dd=>{
@@ -294,7 +312,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     closeAllActionMenus(menu);
     dd.style.display = isOpen ? 'none' : 'block';
   };
-  /* ============================ */
 
   function populateStaffSelects(){
     const selAssigned = document.getElementById('assignedTo');
@@ -342,7 +359,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       stock.push({ id: child.key, ...child.val() });
     });
 
-    // si el modal está abierto, refrescar lista filtrada
     const modal = document.getElementById('partsModal');
     if(modal && modal.style.display === 'flex'){
       refreshStockSelect();
@@ -362,7 +378,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
     }));
 
-    render(); // ahora render es seguro si DOM no está listo
+    render();
   });
 
   // --------------------
@@ -374,8 +390,11 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const model = document.getElementById('deviceModel').value.trim();
     const color = document.getElementById('deviceColor').value.trim();
     const issue = document.getElementById('issue').value.trim();
+
     const priceRaw = document.getElementById('price').value.trim();
+    const currency = document.getElementById('currency').value; // C$ o $
     const price = priceRaw === '' ? null : parseFloat(priceRaw);
+
     const assignedTo = document.getElementById('assignedTo').value.trim();
     const receivedBy = document.getElementById('receivedBy').value.trim();
 
@@ -390,6 +409,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         clientPhone: phone,
         model, color, issue,
         price: price === null ? null : price,
+        currency: currency || 'C$',
         assignedTo, receivedBy
       }).then(()=>{
         editingId = null;
@@ -404,10 +424,11 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         clientPhone: phone,
         model, color, issue,
         price: price === null ? null : price,
+        currency: currency || 'C$',
         assignedTo, receivedBy,
         status: "Pendiente",
         delivered: false,
-        receivedAt: new Date().toLocaleString(),
+        receivedAt: nowLocalString(),   // ✅ fecha/hora al agregar
         partsUsed: []
       });
       document.getElementById('repairForm').reset();
@@ -423,7 +444,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     document.getElementById('deviceModel').value = r.model || '';
     document.getElementById('deviceColor').value = r.color || '';
     document.getElementById('issue').value = r.issue || '';
+
     document.getElementById('price').value = (r.price != null) ? r.price : '';
+    const currencySel = document.getElementById('currency');
+    if(currencySel) currencySel.value = r.currency || 'C$';
 
     const selAssigned = document.getElementById('assignedTo');
     const selReceived = document.getElementById('receivedBy');
@@ -452,13 +476,27 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   };
 
   window.updateStatus = (id,newStatus)=> update(ref(db,'repairs/'+id), {status: newStatus});
-  window.markDelivered = (id)=> update(ref(db,'repairs/'+id), {delivered:true});
 
-  // ✅ NUEVO: cancelar / entregar sin reparar (sin borrar)
+  // ✅ Entregar: guarda quién entregó + cuándo
+  window.markDelivered = (id)=>{
+    const r = repairs.find(x=>x.id===id);
+    const name = r?.clientName || 'este cliente';
+    if(!confirm(`¿Confirmas ENTREGAR el equipo de ${name}?`)) return;
+
+    const deliveredBy = askDeliveredBy();
+    if(!deliveredBy) return;
+
+    update(ref(db,'repairs/'+id), {
+      delivered:true,
+      deliveredAt: nowLocalString(),
+      deliveredBy
+    });
+  };
+
+  // ✅ Entregar sin reparar: guarda quién entregó + motivo + cuándo
   window.cancelRepair = (id)=>{
     const r = repairs.find(x=>x.id===id);
 
-    // Motivo obligatorio
     const reason = prompt('Motivo de cancelación / entrega sin reparar (ej: cliente desistió):');
     if(reason === null) return;
     const clean = reason.trim();
@@ -470,10 +508,14 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const name = r?.clientName || 'este cliente';
     if(!confirm(`¿Confirmas ENTREGAR SIN REPARAR el equipo de ${name}?`)) return;
 
+    const deliveredBy = askDeliveredBy();
+    if(!deliveredBy) return;
+
     update(ref(db,'repairs/'+id), {
       status: "Cancelado",
       delivered: true,
-      deliveredAt: new Date().toLocaleString(),
+      deliveredAt: nowLocalString(),
+      deliveredBy,
       cancelReason: clean
     });
   };
@@ -621,16 +663,15 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const authorizer = document.getElementById('authSelect').value;
     if(!authorizer){ alert('Selecciona quién autorizó'); return; }
 
-    const when = new Date().toLocaleString();
+    const when = nowLocalString();
 
     try{
-      // 1) descontar stock con transacciones
       for(const p of selectedParts){
         const stockRef = ref(db, 'stock/' + p.stockId);
         const result = await runTransaction(stockRef, (current)=>{
           if(current == null) return current;
           const currentQty = current.qty || 0;
-          if(currentQty < p.qty) return; // aborta
+          if(currentQty < p.qty) return;
           return { ...current, qty: currentQty - p.qty };
         }, { applyLocally: false });
 
@@ -640,7 +681,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         }
       }
 
-      // 2) registrar logs (salida)
       for(const p of selectedParts){
         await set(push(ref(db,'logs')), {
           date: when,
@@ -653,7 +693,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         });
       }
 
-      // 3) guardar en reparación
       const used = selectedParts.map(p=>({ ...p, date: when, authorizer }));
       const already = Array.isArray(currentRepair.partsUsed) ? currentRepair.partsUsed : [];
       await update(ref(db,'repairs/'+currentRepair.id), {
@@ -669,10 +708,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   };
 
   // --------------------
-  // RENDER (SEGURO)
+  // RENDER
   // --------------------
   function render(){
-    if(!repairsTable || !completedTable) return; // DOM aún no listo
+    if(!repairsTable || !completedTable) return;
     const s = (searchInput?.value || '').toLowerCase();
 
     repairsTable.innerHTML = repairs
@@ -699,6 +738,9 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <button class="small" onclick="openPartsModal('${r.id}')">Usar repuestos ${partsCount?`(${partsCount})`:''}</button>
         `;
 
+        const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
+        const receivedAt = r.receivedAt || '-';
+
         return `
         <tr>
           <td>${r.clientName}</td>
@@ -706,20 +748,18 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.model}</td>
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
-          <td>${r.price==null?'-':r.price}</td>
+          <td>${priceText}</td>
+          <td>${receivedAt}</td>
           <td>${r.receivedBy||'-'}</td>
           <td>${r.assignedTo||'-'}</td>
           <td><span class="badge ${badgeClass}">${r.status}</span></td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
 
-          <!-- ✅ MODIFICADO: acciones en menú móvil -->
           <td class="actions-cell">
-            <!-- PC: botones normales -->
             <div class="actions-wrap">
               ${actionButtonsHTML}
             </div>
 
-            <!-- Móvil: menú ⋯ -->
             <div class="actions-menu" id="actionsMenu_${r.id}">
               <button type="button" class="actions-trigger" onclick="toggleActionsMenu('${r.id}')">⋯</button>
               <div class="actions-dropdown">
@@ -740,6 +780,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           ? `<span class="badge cancelled">Cancelado</span>`
           : `<span class="badge completed">Completado</span>`;
 
+        const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
+        const receivedAt = r.receivedAt || '-';
+        const deliveredBy = r.deliveredBy || '-';   // ✅ AHORA SÍ se muestra en historial
+
         return `
         <tr>
           <td>${r.clientName}</td>
@@ -747,10 +791,12 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
           <td>${r.model}</td>
           <td>${r.color||'-'}</td>
           <td>${r.issue}</td>
-          <td>${r.price==null?'-':r.price}</td>
+          <td>${priceText}</td>
+          <td>${receivedAt}</td>
           <td>${r.receivedBy||'-'}</td>
           <td>${r.assignedTo||'-'}</td>
           <td>${badge}</td>
+          <td>${deliveredBy}</td>
           <td><button onclick="startEdit('${r.id}')">Editar</button></td>
           <td><button class="small" onclick="openPartsModal('${r.id}')">Repuestos ${partsCount?`(${partsCount})`:''}</button></td>
         </tr>`;
@@ -759,7 +805,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 
   // DOM READY
   document.addEventListener('DOMContentLoaded', ()=>{
-    // cache DOM
     searchInput = document.getElementById('search');
     repairsTable = document.getElementById('repairsTable');
     completedTable = document.getElementById('completedTable');
@@ -767,30 +812,23 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     populateStaffSelects();
     if(searchInput) searchInput.oninput = render;
 
-    // buscador en vivo dentro del modal
     const stockSearch = document.getElementById('stockSearch');
     if(stockSearch) stockSearch.addEventListener('input', refreshStockSelect);
 
-    // cerrar modal tocando afuera
     const overlay = document.getElementById('partsModal');
     overlay?.addEventListener('click', (e)=>{
       if(e.target === overlay) closePartsModal();
     });
 
-    /* ✅ NUEVO: cerrar menú de acciones al tocar fuera / scroll */
     document.addEventListener('click', (e)=>{
-      // si tocas en el trigger, lo maneja toggleActionsMenu
       if(e.target.closest('.actions-trigger')) return;
-      // si tocas dentro del dropdown, no lo cierres aquí
       if(e.target.closest('.actions-dropdown')) return;
       closeAllActionMenus();
     }, true);
 
     window.addEventListener('scroll', ()=> closeAllActionMenus(), { passive:true });
     window.addEventListener('resize', ()=> closeAllActionMenus(), { passive:true });
-    /* ============================ */
 
-    // ahora sí pintar si ya habían llegado datos
     render();
   });
 </script>
@@ -815,7 +853,16 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <input id="deviceModel" placeholder="Modelo del dispositivo">
         <input id="deviceColor" placeholder="Color (opcional)">
         <input id="issue" placeholder="Problema / Reparación">
-        <input id="price" placeholder="Precio">
+
+        <!-- ✅ Precio con moneda -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <select id="currency" style="width:120px">
+            <option value="C$">C$</option>
+            <option value="$">$</option>
+          </select>
+          <input id="price" placeholder="Precio" style="flex:1; min-width:160px">
+        </div>
+
         <select id="receivedBy"><option value="">-- Recibió --</option></select>
         <select id="assignedTo"><option value="">-- Asignado a --</option></select>
         <button id="submitRepair" type="submit">Agregar reparación</button>
@@ -835,6 +882,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
             <th>Color</th>
             <th>Problema</th>
             <th>Precio</th>
+            <th>Recibido</th>
             <th>Recibió</th>
             <th>Asignado</th>
             <th>Estado</th>
@@ -858,9 +906,11 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
               <th>Color</th>
               <th>Problema</th>
               <th>Precio</th>
+              <th>Recibido</th>
               <th>Recibió</th>
               <th>Asignado</th>
               <th>Estado</th>
+              <th>Entregó</th>
               <th>Editar</th>
               <th>Repuestos</th>
             </tr>
