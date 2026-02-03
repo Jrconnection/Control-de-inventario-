@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Proceso - Técnicos</title>
+
+<style>
+:root{
+  --bg1:#0b0f1a;
+  --bg2:#140a1f;
+
+  --text:#f1f5f9;
+  --muted:rgba(203,213,225,.88);
+  --border:rgba(255,255,255,.10);
+
+  /* Estados (botones) */
+  --pending:#ffd60a;   /* amarillo */
+  --process:#ff3b30;   /* rojo */
+  --done:#10e750;      /* verde */
+
+  /* Colores por técnico */
+  --engell:#ff4fa3;    /* rosado */
+  --geovany:#ff3b30;   /* rojo */
+  --jonathan:#00e5ff;  /* cyan */
+
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.185);
+}
+
+*{ box-sizing:border-box }
+
+body{
+  margin:0;
+  font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color:var(--text);
+  min-height:100dvh;
+
+  background:
+    radial-gradient(900px 550px at 15% 10%, rgba(255,79,163,.18), transparent 60%),
+    radial-gradient(900px 550px at 85% 15%, rgba(0,229,255,.18), transparent 60%),
+    radial-gradient(900px 550px at 70% 85%, rgba(255,59,48,.16), transparent 60%),
+    linear-gradient(135deg, var(--bg1), var(--bg2));
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  backdrop-filter: blur(12px);
+  background: rgba(5,7,12,.65);
+  border-bottom:1px solid var(--border);
+  padding:12px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
+h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+.sub{ margin-top:4px; font-size:12px; color:var(--muted); }
+
+.right{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color:rgba(203,213,225,.92);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+button{
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.08);
+  color:var(--text);
+  cursor:pointer;
+}
+button:hover{ background: rgba(255,255,255,.12); }
+
+main{ padding:12px; }
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(340px, 1fr));
+  gap:14px;
+}
+
+/* columna técnico colorida */
+.col{
+  border-radius:20px;
+  overflow:hidden;
+  min-height: calc(100dvh - 98px);
+  display:flex;
+  flex-direction:column;
+
+  border:1px solid color-mix(in srgb, var(--tcolor) 40%, rgba(255,255,255,.10));
+  box-shadow: var(--shadow);
+
+  background:
+    radial-gradient(900px 520px at 15% 0%, color-mix(in srgb, var(--tcolor) 22%, transparent), transparent 60%),
+    radial-gradient(900px 520px at 85% 100%, color-mix(in srgb, var(--tcolor) 16%, transparent), transparent 65%),
+    rgba(10,15,28,.60);
+}
+
+.col-head{
+  padding:12px 12px 10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--tcolor) 28%, rgba(10,15,28,.55)),
+      rgba(10,15,28,.55)
+    );
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.name{
+  font-size:18px;
+  font-weight:1000;
+  letter-spacing:.2px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.name-dot{
+  width:12px; height:12px; border-radius:999px;
+  background: var(--tcolor);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--tcolor) 18%, transparent);
+}
+
+.counts{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  color:rgba(203,213,225,.92);
+}
+.badge b{ color:var(--text); }
+
+.dot{
+  width:10px; height:10px;
+  border-radius:999px;
+  display:inline-block;
+}
+.dot-yellow{ background: var(--pending); }
+.dot-red{ background: var(--process); }
+.dot-green{ background: var(--done); }
+
+.list{
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  overflow:hidden;
+}
+
+/* tarjeta */
+.item{
+  border:1px solid color-mix(in srgb, var(--tcolor) 22%, rgba(255,255,255,.10));
+  background: rgba(6,10,18,.70);
+  border-radius:16px;
+  padding:10px;
+}
+.item:hover{
+  border-color: color-mix(in srgb, var(--tcolor) 42%, rgba(255,255,255,.22));
+  background: rgba(6,10,18,.78);
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.leftblock{ flex:1; min-width:0; }
+
+.model{
+  font-size:16px;
+  font-weight:1000;
+  line-height:1.1;
+}
+.issue{
+  margin-top:6px;
+  font-size:13px;
+  line-height:1.25;
+  opacity:.96;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+
+.meta{
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  color:rgba(203,213,225,.80);
+  font-size:11px;
+}
+.meta b{ color:var(--text); font-weight:900; }
+
+/* etiquetas */
+.tag{
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color:rgba(203,213,225,.92);
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:11px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.tag .dot{ width:8px; height:8px; }
+.tag.pending .dot{ background: var(--pending); }
+.tag.process .dot{ background: var(--process); }
+.tag.done .dot{ background: var(--done); }
+
+/* ✅ Botonera de estado (colores rojo/amarillo/verde) */
+.state-buttons{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+
+.sbtn{
+  border:none;
+  cursor:pointer;
+  padding:8px 10px;
+  border-radius:12px;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.2px;
+  color:#0b0f1a;
+  min-width:92px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  box-shadow: 0 10px 18px rgba(0,0,0,.18);
+}
+.sbtn:active{ transform: translateY(1px); }
+
+.sbtn.pending{ background: var(--pending); }
+.sbtn.process{ background: var(--process); color:#fff; }
+.sbtn.done{ background: var(--done); }
+
+.sbtn[disabled]{
+  opacity:.35;
+  cursor:default;
+  filter:saturate(.7);
+  box-shadow:none;
+}
+
+.more, .empty{
+  border:1px dashed rgba(255,255,255,.14);
+  border-radius:16px;
+  padding:10px;
+  color:rgba(203,213,225,.85);
+  font-size:12px;
+  background: rgba(255,255,255,.04);
+}
+
+/* toast */
+.toast{
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  z-index:9999;
+  background: rgba(5,7,12,.85);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:10px 12px;
+  color:var(--text);
+  font-size:12px;
+  display:none;
+  max-width:min(420px, 90vw);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 1100px){
+  .grid{ grid-template-columns: 1fr; }
+  .col{ min-height:auto; }
+}
+</style>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+    authDomain: "control-de-inventario-633f5.firebaseapp.com",
+    databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+    projectId: "control-de-inventario-633f5",
+    storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+    messagingSenderId: "1012694355492",
+    appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ✅ Mantengo tus nombres EXACTOS (para que siga mostrando)
+  const TECHS = ['Jonathan','Engell','Geovany'];
+
+  const MAX_VISIBLE_PER_TECH = 10;
+  const t = (s)=> (s||'').toString().trim();
+
+  function nowLocalString(){ return new Date().toLocaleString(); }
+  function startOfTodayTS(){
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d.getTime();
+  }
+
+  function toast(msg){
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=> el.style.display = 'none', 1600);
+  }
+
+  // ✅ Sin confirmación: set estado directo
+  window.setStatus = async (id, newStatus, model)=>{
+    const payload = {
+      status: newStatus,
+      statusUpdatedAt: nowLocalString(),
+      statusUpdatedAtTS: Date.now()
+    };
+
+    if(newStatus === 'En Proceso'){
+      payload.inProgressAt = nowLocalString();
+      payload.inProgressAtTS = Date.now();
+    }
+
+    if(newStatus === 'Completado'){
+      payload.completedAt = nowLocalString();
+      payload.completedAtTS = Date.now();
+      payload.completedDayTS = startOfTodayTS();
+    }
+
+    await update(ref(db,'repairs/'+id), payload);
+    toast(`✅ ${model || 'Equipo'} → ${newStatus}`);
+  };
+
+  function techColor(tech){
+    if(tech === 'Engell') return 'var(--engell)';
+    if(tech === 'Geovany') return 'var(--geovany)';
+    return 'var(--jonathan)'; // Jonathan
+  }
+
+  function statusTag(status){
+    if(status === 'En Proceso') return `<span class="tag process"><span class="dot"></span>En proceso</span>`;
+    if(status === 'Completado') return `<span class="tag done"><span class="dot"></span>Completado</span>`;
+    return `<span class="tag pending"><span class="dot"></span>Pendiente</span>`;
+  }
+
+  function buttonsHTML(r){
+    const status = t(r.status) || 'Pendiente';
+    const model = (t(r.model) || '-').replace(/"/g, '&quot;');
+
+    return `
+      <div class="state-buttons">
+        <button class="sbtn pending" ${status==='Pendiente'?'disabled':''}
+          onclick="setStatus('${r.id}','Pendiente','${model}')">Pendiente</button>
+
+        <button class="sbtn process" ${status==='En Proceso'?'disabled':''}
+          onclick="setStatus('${r.id}','En Proceso','${model}')">En proceso</button>
+
+        <button class="sbtn done" ${status==='Completado'?'disabled':''}
+          onclick="setStatus('${r.id}','Completado','${model}')">Completar</button>
+      </div>
+    `;
+  }
+
+  function itemHTML(r){
+    const model = t(r.model) || '-';
+    const issue = t(r.issue) || '-';
+    const client = t(r.clientName) || 'Sin nombre';
+    const received = t(r.receivedAt) || '-';
+    const status = t(r.status) || 'Pendiente';
+
+    return `
+      <div class="item">
+        <div class="top">
+          <div class="leftblock">
+            <div class="model">${model}</div>
+            <div class="issue">${issue}</div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+            ${statusTag(status)}
+            ${buttonsHTML(r)}
+          </div>
+        </div>
+
+        <div class="meta">
+          <div><b>${client}</b></div>
+          <div>${received}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderColumn(tech, items){
+    const pending = items.filter(r=> t(r.status) === 'Pendiente');
+    const inprog  = items.filter(r=> t(r.status) === 'En Proceso');
+    const done    = items.filter(r=> t(r.status) === 'Completado');
+
+    // Orden: proceso, pendiente, completado (para que se vea lo importante arriba)
+    const ordered = [...inprog, ...pending, ...done];
+
+    const visible = ordered.slice(0, MAX_VISIBLE_PER_TECH);
+    const hiddenCount = Math.max(0, ordered.length - visible.length);
+
+    const listHTML = visible.length
+      ? visible.map(itemHTML).join('')
+      : `<div class="empty">Sin reparaciones asignadas</div>`;
+
+    const more = hiddenCount > 0
+      ? `<div class="more">+${hiddenCount} más…</div>`
+      : '';
+
+    const color = techColor(tech);
+
+    return `
+      <section class="col" style="--tcolor:${color}">
+        <div class="col-head">
+          <div>
+            <div class="name"><span class="name-dot"></span>${tech}</div>
+            <div class="sub">Proc/Pend/Comp se actualiza en vivo</div>
+          </div>
+          <div class="counts">
+            <div class="badge"><span class="dot dot-red"></span>Proc: <b>${inprog.length}</b></div>
+            <div class="badge"><span class="dot dot-yellow"></span>Pend: <b>${pending.length}</b></div>
+            <div class="badge"><span class="dot dot-green"></span>Comp: <b>${done.length}</b></div>
+          </div>
+        </div>
+
+        <div class="list">
+          ${listHTML}
+          ${more}
+        </div>
+      </section>
+    `;
+  }
+
+  function render(allRepairs){
+    const grid = document.getElementById('grid');
+
+    // ✅ AHORA incluye también Completado (para que se vea)
+    const filtered = allRepairs.filter(r=>{
+      const assignedTo = t(r.assignedTo || r.responsible);
+      const status = t(r.status);
+      const notDelivered = r.delivered !== true;
+
+      return notDelivered
+        && TECHS.includes(assignedTo)
+        && (status === 'Pendiente' || status === 'En Proceso' || status === 'Completado');
+    });
+
+    const byTech = {};
+    TECHS.forEach(tech => byTech[tech] = []);
+    filtered.forEach(r=>{
+      const tech = t(r.assignedTo || r.responsible);
+      byTech[tech].push(r);
+    });
+
+    grid.innerHTML = TECHS.map(tech => renderColumn(tech, byTech[tech])).join('');
+  }
+
+  onValue(ref(db,'repairs'), snap=>{
+    const repairs = [];
+    snap.forEach(child=>{
+      repairs.push({ id: child.key, ...child.val() });
+    });
+
+    const normalized = repairs.map(r=>({
+      ...r,
+      assignedTo: r.assignedTo || r.responsible || ''
+    }));
+
+    render(normalized);
+    document.getElementById('clock').textContent = new Date().toLocaleString();
+  });
+
+  window.goFullscreen = async ()=>{
+    try { await document.documentElement.requestFullscreen(); }
+    catch(e){ alert('Pantalla completa no disponible en este navegador.'); }
+  };
+  window.forceRefresh = ()=> location.reload();
+</script>
+
+</head>
+<body>
+  <header>
+    <div>
+      <h1>⚡ Proceso en vivo (Taller)</h1>
+      <div class="sub">
+        Botones por estado: <b style="color:var(--pending)">amarillo</b> (Pendiente) ·
+        <b style="color:var(--process)">rojo</b> (En proceso) ·
+        <b style="color:var(--done)">verde</b> (Completar)
+      </div>
+    </div>
+    <div class="right">
+      <div class="pill">🕒 <span id="clock">—</span></div>
+      <button onclick="goFullscreen()">Pantalla completa</button>
+      <button onclick="forceRefresh()">Recargar</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+</body>
+</html>
