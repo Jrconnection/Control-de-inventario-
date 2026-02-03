@@ -18,6 +18,7 @@
   --green:#22c55e;
   --yellow:#facc15;
   --red:#ef4444;
+  --blue:#60a5fa;
 }
 
 *{ box-sizing:border-box }
@@ -33,64 +34,250 @@ main{
   flex:1;
   padding:20px;
   overflow:auto;
-  background: transparent;
 }
 
 /* Sidebar */
-aside {
+aside{
   width: 240px;
   background: #020617;
   border-right: 1px solid var(--border);
   padding: 20px;
 }
-aside h2 { font-size: 18px; margin-bottom: 30px; }
-nav a {
-  display: block;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  color: var(--text);
-  text-decoration: none;
-  background: transparent;
+aside h2{ font-size: 18px; margin:0 0 18px 0; }
+nav a{
+  display:block;
+  padding:12px 14px;
+  margin-bottom:10px;
+  border-radius:10px;
+  color:var(--text);
+  text-decoration:none;
 }
-nav a:hover { background: var(--panel); }
+nav a:hover{ background: var(--panel); }
 
+/* Panels */
 .panel{
   background:linear-gradient(180deg,var(--panel),var(--panel-soft));
   border:1px solid var(--border);
   border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
+  padding:18px;
+  margin-bottom:16px;
 }
+main h2{ margin:0 0 12px 0; }
+.panel h3{ margin:0 0 12px 0; }
+
+/* Inputs */
 input,select,button{
-  padding:8px 10px;
-  border-radius:10px;
+  padding:10px 12px;
+  border-radius:12px;
   border:1px solid var(--border);
   background:#020617;
   color:var(--text);
 }
+input,select{ height:42px; }
+
 button{
   background:var(--primary);
   color:#020617;
-  font-weight:600;
+  font-weight:800;
   cursor:pointer;
+  height:42px;
 }
 button:hover{ background:var(--primary-hover) }
-table{ width:100%; border-collapse:collapse; margin-top:12px; }
-th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
-.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
-.pending{ background:rgba(250,204,21,.2); color:var(--yellow); }
-.inprogress{ background:rgba(59,130,246,.2); color:#3b82f6; }
-.completed{ background:rgba(34,197,94,.15); color:var(--green); }
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
 
-/* ✅ NUEVO: badge para cancelada */
+/* Form grid */
+#repairForm{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap:12px;
+  align-items:end;
+}
+.price-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns: 140px 1fr;
+  gap:10px;
+  align-items:end;
+}
+.form-actions{
+  grid-column:1 / -1;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.form-actions button{
+  width:auto;
+  padding:0 14px;
+}
+
+/* Table wrapper (evita que se salga) */
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border-radius:12px;
+}
+
+/* Table */
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  margin-top:12px;
+  table-layout: fixed; /* ✅ importante para que no se expanda infinito */
+  min-width: 980px;    /* respaldo si la pantalla es pequeña */
+}
+thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#0b1220;
+  border-bottom:1px solid var(--border);
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  vertical-align:middle;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* Column sizing (ajusta anchos) */
+th.col-phone, td.col-phone{ width: 140px; }
+th.col-model, td.col-model{ width: 150px; }
+th.col-color, td.col-color{ width: 110px; }
+th.col-price, td.col-price{ width: 110px; }
+th.col-receivedAt, td.col-receivedAt{ width: 165px; }
+th.col-receivedBy, td.col-receivedBy{ width: 120px; }
+th.col-assigned, td.col-assigned{ width: 120px; }
+th.col-status, td.col-status{ width: 110px; }
+th.col-actions, td.col-actions{ width: 320px; } /* ✅ espacio fijo para acciones */
+
+/* allow issue to show a bit more but still clipped */
+th.col-issue, td.col-issue{
+  white-space:nowrap;
+}
+
+/* Badges */
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+.pending{ background:rgba(250,204,21,.2); color:var(--yellow); }
+.inprogress{ background:rgba(96,165,250,.18); color:var(--blue); }
+.completed{ background:rgba(34,197,94,.15); color:var(--green); }
 .cancelled{ background:rgba(239,68,68,.20); color:var(--red); }
 
-.details-table th, .details-table td{ padding:8px; font-size:14px; }
-.whatsapp-link{ color:var(--primary); text-decoration:none; font-weight:600 }
+.details-table th, .details-table td{ padding:10px; font-size:13px; }
+
+/* WhatsApp link */
+.whatsapp-link{
+  color:var(--primary);
+  text-decoration:none;
+  font-weight:800;
+}
 .whatsapp-link:hover{ text-decoration:underline }
 
-/* Modal (repuestos) */
+/* ✅ Actions: compact chips that wrap (no overflow) */
+.actions-cell{
+  white-space:normal;          /* ✅ permite salto de línea */
+}
+.actions-wrap{
+  display:flex;
+  flex-wrap:wrap;              /* ✅ se acomodan en 2 filas si hace falta */
+  gap:6px;
+  align-items:center;
+}
+.action-btn{
+  height:30px !important;
+  padding:0 10px !important;
+  border-radius:999px !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  border:1px solid var(--border) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+}
+.action-btn:hover{
+  background: rgba(56,189,248,.12) !important;
+  border-color: rgba(56,189,248,.25) !important;
+}
+.action-primary{
+  background: rgba(56,189,248,.18) !important;
+  border-color: rgba(56,189,248,.22) !important;
+}
+.action-green{
+  background: rgba(34,197,94,.16) !important;
+  border-color: rgba(34,197,94,.20) !important;
+  color: var(--green) !important;
+}
+.action-red{
+  background: rgba(239,68,68,.16) !important;
+  border-color: rgba(239,68,68,.20) !important;
+  color: var(--red) !important;
+}
+.action-yellow{
+  background: rgba(250,204,21,.16) !important;
+  border-color: rgba(250,204,21,.20) !important;
+  color: var(--yellow) !important;
+}
+
+/* Mobile actions menu */
+.actions-menu{ position:relative; display:none; }
+.actions-trigger{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-size:20px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0;
+}
+.actions-dropdown{
+  position:absolute;
+  right:0;
+  top:44px;
+  min-width:220px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 14px 30px rgba(0,0,0,.35);
+  padding:6px;
+  display:none;
+  z-index:99999;
+}
+.actions-dropdown button{
+  width:100%;
+  text-align:left;
+  padding:10px 10px;
+  border-radius:10px;
+  border:1px solid transparent;
+  background:transparent;
+  color:var(--text);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-size:14px;
+  cursor:pointer;
+  height:auto;
+}
+.actions-dropdown button:hover{
+  background:rgba(56,189,248,.12);
+  border-color:rgba(56,189,248,.18);
+}
+
+/* Modal */
 .modal-overlay{
   position:fixed;
   inset:0;
@@ -116,7 +303,13 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   gap:10px;
   align-items:end;
 }
-.modal-grid label{ font-size:13px; color:var(--muted); display:block; margin-bottom:6px; }
+.modal-grid label{
+  font-size:13px;
+  color:var(--muted);
+  display:block;
+  margin-bottom:6px;
+}
+.modal-grid input, .modal-grid select{ width:100%; height:42px; }
 .modal-actions{
   display:flex;
   justify-content:flex-end;
@@ -128,11 +321,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   color:var(--text) !important;
   border:1px solid var(--border) !important;
 }
-.small{
-  font-size:12px;
-  padding:6px 8px;
-  border-radius:10px;
-}
 .pill{
   display:inline-flex;
   gap:8px;
@@ -142,7 +330,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   padding:8px 10px;
   border-radius:12px;
 }
-.pill b{ font-weight:700; }
+.pill b{ font-weight:800; }
 .pill .x{
   cursor:pointer;
   border:1px solid var(--border);
@@ -153,89 +341,19 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
 }
 .pills-wrap{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 
-/* ============================
-   ✅ NUEVO: MENÚ ACCIONES (⋯)
-   ============================ */
-.actions-cell{ white-space:nowrap; }
-
-.actions-wrap{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  align-items:center;
-}
-
-/* menú móvil */
-.actions-menu{
-  position:relative;
-  display:none; /* se activa en móvil por media query */
-}
-
-.actions-trigger{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.05);
-  color:var(--text);
-  font-size:20px;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-  padding:0;
-}
-
-.actions-dropdown{
-  position:absolute;
-  right:0;
-  top:44px;
-  min-width:200px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  box-shadow:0 14px 30px rgba(0,0,0,.35);
-  padding:6px;
-  display:none;
-  z-index:99999;
-}
-
-.actions-dropdown button{
-  width:100%;
-  text-align:left;
-  padding:10px 10px;
-  border-radius:10px;
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--text);
-  display:flex;
-  gap:10px;
-  align-items:center;
-  font-size:14px;
-  cursor:pointer;
-}
-
-.actions-dropdown button:hover{
-  background:rgba(56,189,248,.12);
-  border-color:rgba(56,189,248,.18);
-}
-
 /* Responsive */
-@media (max-width: 800px) {
-  body { flex-direction: column; }
-  aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
-  main { padding: 14px; }
-  nav a { display: inline-block; margin-right: 8px; }
-  .panel { padding: 12px; }
-  input, select, button { width: 100%; margin-top: 8px; }
-  .panel { overflow-x: auto; }
-  table { min-width: 700px; }
-  .details-table th, .details-table td { font-size: 13px; }
-  .modal-grid{ grid-template-columns: 1fr; }
+@media (max-width: 900px){
+  body{ flex-direction:column; }
+  aside{ width:100%; border-right:none; border-bottom:1px solid var(--border); }
+  main{ padding:14px; }
+  nav a{ display:inline-block; margin-right:8px; margin-bottom:8px; }
 
-  /* ✅ En móvil: ocultar botones y usar menú */
+  #repairForm{ grid-template-columns:1fr; }
+  .price-row{ grid-template-columns:1fr; }
+
+  /* móvil: ocultar chips y usar menú */
   .actions-wrap{ display:none !important; }
   .actions-menu{ display:inline-block !important; }
-  .actions-trigger{ width:40px; height:40px; }
 }
 </style>
 
@@ -260,24 +378,52 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
   let stock = [];
   let editingId = null;
 
-  const staffList = ['Moises','Fergie','Jamil','Jonathan','Engell','Geovany'];
+  const staffList = ['Grethel','Ashly','Fergie','Jamil','Jonathan','Engell','Geovany'];
   const techList  = ['Jonathan','Engell','Geovany'];
   const authorizers = ['Jamil','Jonathan'];
 
-  // Modal state
   let currentRepair = null;
   let selectedParts = [];
 
-  // DOM refs
   let searchInput = null;
   let repairsTable = null;
   let completedTable = null;
 
-  /* ============================
-     ✅ Helpers
-     ============================ */
-  function nowLocalString(){
-    return new Date().toLocaleString();
+  // ✅ Pagination
+  const PAGE_SIZE = 5;
+  let activePage = 1;
+  let completedPage = 1;
+
+  let activePager = null;
+  let completedPager = null;
+
+  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+  function renderPager(container, page, totalPages, onPrev, onNext){
+    if(!container) return;
+
+    // Si no hay nada, igual mostramos 1/1 para que quede consistente
+    container.innerHTML = `
+      <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:12px; flex-wrap:wrap;">
+        <button type="button" class="action-btn" ${page<=1?'disabled':''} id="${container.id}_prev">← Anterior</button>
+        <div style="color:var(--muted); font-weight:800;">
+          Página <b style="color:var(--text)">${page}</b> de <b style="color:var(--text)">${totalPages}</b>
+        </div>
+        <button type="button" class="action-btn" ${page>=totalPages?'disabled':''} id="${container.id}_next">Siguiente →</button>
+      </div>
+    `;
+
+    const prev = document.getElementById(container.id + '_prev');
+    const next = document.getElementById(container.id + '_next');
+    if(prev) prev.onclick = onPrev;
+    if(next) next.onclick = onNext;
+  }
+
+  function nowLocalString(){ return new Date().toLocaleString(); }
+  function startOfTodayTS(){
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d.getTime();
   }
 
   function askDeliveredBy(){
@@ -291,9 +437,6 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     return clean;
   }
 
-  /* ============================
-     ✅ Menú acciones móvil
-     ============================ */
   function closeAllActionMenus(exceptMenu){
     document.querySelectorAll('.actions-dropdown').forEach(dd=>{
       const menu = dd.closest('.actions-menu');
@@ -332,12 +475,14 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     selAssigned.appendChild(placeholderA);
 
     staffList.forEach(name=>{
-      const o = document.createElement('option'); o.value = name; o.textContent = name;
+      const o = document.createElement('option');
+      o.value = name; o.textContent = name;
       selReceived.appendChild(o);
     });
 
     techList.forEach(name=>{
-      const o = document.createElement('option'); o.value = name; o.textContent = name;
+      const o = document.createElement('option');
+      o.value = name; o.textContent = name;
       selAssigned.appendChild(o);
     });
   }
@@ -350,9 +495,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     window.open(url, '_blank');
   };
 
-  // --------------------
-  // LISTENERS FIREBASE
-  // --------------------
+  /* LISTENERS */
   onValue(ref(db,'stock'), snapshot=>{
     stock = [];
     snapshot.forEach(child=>{
@@ -377,13 +520,12 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       receivedBy: r.receivedBy || '',
       partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
     }));
+activePage = 1;
 
     render();
   });
 
-  // --------------------
-  // CRUD REPARACIONES
-  // --------------------
+  /* CRUD */
   window.addRepair = ()=>{
     const name = document.getElementById('clientName').value.trim();
     const phone = document.getElementById('clientPhone').value.trim();
@@ -392,7 +534,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const issue = document.getElementById('issue').value.trim();
 
     const priceRaw = document.getElementById('price').value.trim();
-    const currency = document.getElementById('currency').value; // C$ o $
+    const currency = document.getElementById('currency').value;
     const price = priceRaw === '' ? null : parseFloat(priceRaw);
 
     const assignedTo = document.getElementById('assignedTo').value.trim();
@@ -428,10 +570,14 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         assignedTo, receivedBy,
         status: "Pendiente",
         delivered: false,
-        receivedAt: nowLocalString(),   // ✅ fecha/hora al agregar
+        receivedAt: nowLocalString(),
+        receivedAtTS: Date.now(),
         partsUsed: []
       });
       document.getElementById('repairForm').reset();
+
+      // ✅ opcional: al agregar, vuelve a página 1 para ver la más reciente arriba
+      activePage = 1;
     }
   };
 
@@ -475,9 +621,27 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     const cancel = document.getElementById('cancelEdit'); if(cancel) cancel.style.display = 'none';
   };
 
-  window.updateStatus = (id,newStatus)=> update(ref(db,'repairs/'+id), {status: newStatus});
+  window.updateStatus = (id,newStatus)=>{
+    const payload = {
+      status: newStatus,
+      statusUpdatedAt: nowLocalString(),
+      statusUpdatedAtTS: Date.now()
+    };
 
-  // ✅ Entregar: guarda quién entregó + cuándo
+    if(newStatus === 'En Proceso'){
+      payload.inProgressAt = nowLocalString();
+      payload.inProgressAtTS = Date.now();
+    }
+
+    if(newStatus === 'Completado'){
+      payload.completedAt = nowLocalString();
+      payload.completedAtTS = Date.now();
+      payload.completedDayTS = startOfTodayTS();
+    }
+
+    return update(ref(db,'repairs/'+id), payload);
+  };
+
   window.markDelivered = (id)=>{
     const r = repairs.find(x=>x.id===id);
     const name = r?.clientName || 'este cliente';
@@ -489,11 +653,11 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     update(ref(db,'repairs/'+id), {
       delivered:true,
       deliveredAt: nowLocalString(),
+      deliveredAtTS: Date.now(),
       deliveredBy
     });
   };
 
-  // ✅ Entregar sin reparar: guarda quién entregó + motivo + cuándo
   window.cancelRepair = (id)=>{
     const r = repairs.find(x=>x.id===id);
 
@@ -515,14 +679,13 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       status: "Cancelado",
       delivered: true,
       deliveredAt: nowLocalString(),
+      deliveredAtTS: Date.now(),
       deliveredBy,
       cancelReason: clean
     });
   };
 
-  // ---------------------------
-  // MODAL: USAR REPUESTOS
-  // ---------------------------
+  /* MODAL REPUESTOS */
   function openPartsModal(repairId){
     const r = repairs.find(x=>x.id===repairId);
     if(!r) return;
@@ -642,7 +805,7 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
               <div><b>${p.model}</b> <span style="color:var(--muted)">• ${p.type}</span></div>
               <div style="color:var(--muted); font-size:12px">${p.desc||'-'}</div>
             </div>
-            <div style="margin-left:auto; font-weight:700">x${p.qty}</div>
+            <div style="margin-left:auto; font-weight:800">x${p.qty}</div>
             <button class="x" onclick="removeSelectedPart(${idx})">✕</button>
           </div>
         `).join('')}
@@ -707,110 +870,171 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
     }
   };
 
-  // --------------------
-  // RENDER
-  // --------------------
+  /* RENDER */
   function render(){
     if(!repairsTable || !completedTable) return;
-    const s = (searchInput?.value || '').toLowerCase();
+    const s = (searchInput?.value || '').toLowerCase().trim();
 
-    repairsTable.innerHTML = repairs
-      .filter(r=>!r.delivered && (!s || (r.clientName||'').toLowerCase().includes(s) || (r.clientPhone||'').includes(s)))
-      .map(r=>{
-        const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+    // ==========================
+    // ✅ ACTIVAS (más recientes primero + paginación)
+    // ==========================
+    const activeList = repairs
+      .filter(r => !r.delivered)
+      .filter(r => {
+        if(!s) return true;
+        return (r.clientName||'').toLowerCase().includes(s) || (r.clientPhone||'').includes(s);
+      })
+   .sort((a,b)=>{
+  const ta = Number(a.receivedAtTS || 0);
+  const tb = Number(b.receivedAtTS || 0);
 
-        const badgeClass =
-          r.status==='Pendiente' ? 'pending' :
-          r.status==='En Proceso' ? 'inprogress' :
-          r.status==='Cancelado' ? 'cancelled' :
-          'completed';
+  // 1) Primero por timestamp (más reciente arriba)
+  if(tb !== ta) return tb - ta;
 
-        const actionButtonsHTML = `
-          ${r.status!=='Completado'
-            ? `<button onclick="updateStatus('${r.id}','En Proceso')">En Proceso</button>
-               <button onclick="updateStatus('${r.id}','Completado')">Completar</button>`
-            : ''
-          }
-          ${!r.delivered ? `<button onclick="markDelivered('${r.id}')">Entregar</button>` : ''}
+  // 2) Respaldo: por push id (más reciente arriba)
+  return String(b.id).localeCompare(String(a.id));
+});
 
-          ${!r.delivered ? `<button onclick="cancelRepair('${r.id}')" style="background:rgba(239,68,68,.20); color:var(--red); border:1px solid var(--border);">Entregar sin reparar</button>` : ''}
 
-          <button class="small" onclick="openPartsModal('${r.id}')">Usar repuestos ${partsCount?`(${partsCount})`:''}</button>
-        `;
+    const activeTotalPages = Math.max(1, Math.ceil(activeList.length / PAGE_SIZE));
+    activePage = clamp(activePage, 1, activeTotalPages);
 
-        const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
-        const receivedAt = r.receivedAt || '-';
+    const activeItems = activeList.slice((activePage-1)*PAGE_SIZE, activePage*PAGE_SIZE);
 
-        return `
-        <tr>
-          <td>${r.clientName}</td>
-          <td><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
-          <td>${r.model}</td>
-          <td>${r.color||'-'}</td>
-          <td>${r.issue}</td>
-          <td>${priceText}</td>
-          <td>${receivedAt}</td>
-          <td>${r.receivedBy||'-'}</td>
-          <td>${r.assignedTo||'-'}</td>
-          <td><span class="badge ${badgeClass}">${r.status}</span></td>
-          <td><button onclick="startEdit('${r.id}')">Editar</button></td>
+    repairsTable.innerHTML = activeItems.map(r=>{
+      const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
 
-          <td class="actions-cell">
-            <div class="actions-wrap">
-              ${actionButtonsHTML}
+      const badgeClass =
+        r.status==='Pendiente' ? 'pending' :
+        r.status==='En Proceso' ? 'inprogress' :
+        r.status==='Cancelado' ? 'cancelled' :
+        'completed';
+
+      const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
+      const receivedAt = r.receivedAt || '-';
+
+      const actionsHTML = `
+        <button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>
+        ${r.status!=='Completado'
+          ? `<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶️ Proceso</button>
+             <button class="action-btn action-green" onclick="updateStatus('${r.id}','Completado')">✓ Completar</button>`
+          : ''
+        }
+        <button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos ${partsCount?`(${partsCount})`:''}</button>
+        ${!r.delivered ? `<button class="action-btn" onclick="markDelivered('${r.id}')">📦 Entregar</button>` : ''}
+        ${!r.delivered ? `<button class="action-btn action-red" onclick="cancelRepair('${r.id}')">✕ Sin reparar</button>` : ''}
+      `;
+
+      return `
+      <tr>
+        <td>${r.clientName}</td>
+        <td class="col-phone"><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
+        <td class="col-model">${r.model}</td>
+        <td class="col-color">${r.color||'-'}</td>
+        <td class="col-issue" title="${(r.issue||'').replace(/"/g,'&quot;')}">${r.issue}</td>
+        <td class="col-price">${priceText}</td>
+        <td class="col-receivedAt">${receivedAt}</td>
+        <td class="col-receivedBy">${r.receivedBy||'-'}</td>
+        <td class="col-assigned">${r.assignedTo||'-'}</td>
+        <td class="col-status"><span class="badge ${badgeClass}">${r.status}</span></td>
+
+        <td class="col-actions actions-cell">
+          <div class="actions-wrap">${actionsHTML}</div>
+
+          <div class="actions-menu" id="actionsMenu_${r.id}">
+            <button type="button" class="actions-trigger" onclick="toggleActionsMenu('${r.id}')">⋯</button>
+            <div class="actions-dropdown">
+              ${actionsHTML}
             </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
 
-            <div class="actions-menu" id="actionsMenu_${r.id}">
-              <button type="button" class="actions-trigger" onclick="toggleActionsMenu('${r.id}')">⋯</button>
-              <div class="actions-dropdown">
-                ${actionButtonsHTML}
-              </div>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
+    renderPager(
+      activePager,
+      activePage,
+      activeTotalPages,
+      ()=>{ activePage = clamp(activePage-1, 1, activeTotalPages); render(); },
+      ()=>{ activePage = clamp(activePage+1, 1, activeTotalPages); render(); }
+    );
 
-    completedTable.innerHTML = repairs
-      .filter(r=>r.delivered)
-      .map(r=>{
-        const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+    // ==========================
+    // ✅ HISTORIAL (más recientes primero + paginación)
+    // ==========================
+    const completedList = repairs
+      .filter(r => r.delivered || r.status === 'Completado' || r.status === 'Cancelado')
+      .sort((a,b)=>{
+        const ta = a.deliveredAtTS || a.completedAtTS || a.receivedAtTS || 0;
+        const tb = b.deliveredAtTS || b.completedAtTS || b.receivedAtTS || 0;
+        return tb - ta;
+      });
 
-        const isCancelled = (r.status === 'Cancelado');
-        const badge = isCancelled
-          ? `<span class="badge cancelled">Cancelado</span>`
-          : `<span class="badge completed">Completado</span>`;
+    const completedTotalPages = Math.max(1, Math.ceil(completedList.length / PAGE_SIZE));
+    completedPage = clamp(completedPage, 1, completedTotalPages);
 
-        const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
-        const receivedAt = r.receivedAt || '-';
-        const deliveredBy = r.deliveredBy || '-';   // ✅ AHORA SÍ se muestra en historial
+    const completedItems = completedList.slice((completedPage-1)*PAGE_SIZE, completedPage*PAGE_SIZE);
 
-        return `
-        <tr>
-          <td>${r.clientName}</td>
-          <td><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
-          <td>${r.model}</td>
-          <td>${r.color||'-'}</td>
-          <td>${r.issue}</td>
-          <td>${priceText}</td>
-          <td>${receivedAt}</td>
-          <td>${r.receivedBy||'-'}</td>
-          <td>${r.assignedTo||'-'}</td>
-          <td>${badge}</td>
-          <td>${deliveredBy}</td>
-          <td><button onclick="startEdit('${r.id}')">Editar</button></td>
-          <td><button class="small" onclick="openPartsModal('${r.id}')">Repuestos ${partsCount?`(${partsCount})`:''}</button></td>
-        </tr>`;
-      }).join('');
+    completedTable.innerHTML = completedItems.map(r=>{
+      const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+
+      const isCancelled = (r.status === 'Cancelado');
+      const badge = isCancelled
+        ? `<span class="badge cancelled">Cancelado</span>`
+        : `<span class="badge completed">Completado</span>`;
+
+      const priceText = (r.price==null) ? '-' : `${r.currency || 'C$'} ${r.price}`;
+      const receivedAt = r.receivedAt || '-';
+      const deliveredBy = r.deliveredBy || '-';
+
+      return `
+      <tr>
+        <td>${r.clientName}</td>
+        <td class="col-phone"><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
+        <td class="col-model">${r.model}</td>
+        <td class="col-color">${r.color||'-'}</td>
+        <td class="col-issue" title="${(r.issue||'').replace(/"/g,'&quot;')}">${r.issue}</td>
+        <td class="col-price">${priceText}</td>
+        <td class="col-receivedAt">${receivedAt}</td>
+        <td class="col-receivedBy">${r.receivedBy||'-'}</td>
+        <td class="col-assigned">${r.assignedTo||'-'}</td>
+        <td class="col-status">${badge}</td>
+        <td class="col-actions actions-cell">
+          <div class="actions-wrap">
+            <button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>
+            <button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos ${partsCount?`(${partsCount})`:''}</button>
+            <span class="action-btn" style="cursor:default; opacity:.85;">Entregó: ${deliveredBy}</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    renderPager(
+      completedPager,
+      completedPage,
+      completedTotalPages,
+      ()=>{ completedPage = clamp(completedPage-1, 1, completedTotalPages); render(); },
+      ()=>{ completedPage = clamp(completedPage+1, 1, completedTotalPages); render(); }
+    );
   }
 
-  // DOM READY
+  /* DOM READY */
   document.addEventListener('DOMContentLoaded', ()=>{
     searchInput = document.getElementById('search');
     repairsTable = document.getElementById('repairsTable');
     completedTable = document.getElementById('completedTable');
 
+    // ✅ pager containers
+    activePager = document.getElementById('activePager');
+    completedPager = document.getElementById('completedPager');
+
     populateStaffSelects();
-    if(searchInput) searchInput.oninput = render;
+
+    // ✅ al buscar, vuelve a página 1 de activas
+    if(searchInput) searchInput.oninput = ()=>{
+      activePage = 1;
+      render();
+    };
 
     const stockSearch = document.getElementById('stockSearch');
     if(stockSearch) stockSearch.addEventListener('input', refreshStockSelect);
@@ -841,11 +1065,13 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
       <a href="index.html">🏠 Dashboard</a>
       <a href="inventario.html">🧾 Inventario</a>
       <a href="reparaciones.html" style="background:#0f172a">🔧 Reparaciones</a>
+      <a href="proceso.html">⚡ Proceso (TV)</a>
     </nav>
   </aside>
 
   <main>
     <h2>Registrar reparación</h2>
+
     <div class="panel">
       <form id="repairForm" onsubmit="event.preventDefault(); addRepair();">
         <input id="clientName" placeholder="Nombre del cliente">
@@ -854,74 +1080,85 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); text-align:left; }
         <input id="deviceColor" placeholder="Color (opcional)">
         <input id="issue" placeholder="Problema / Reparación">
 
-        <!-- ✅ Precio con moneda -->
-        <div style="display:flex; gap:10px; flex-wrap:wrap">
-          <select id="currency" style="width:120px">
+        <div class="price-row">
+          <select id="currency">
             <option value="C$">C$</option>
             <option value="$">$</option>
           </select>
-          <input id="price" placeholder="Precio" style="flex:1; min-width:160px">
+          <input id="price" placeholder="Precio">
         </div>
 
         <select id="receivedBy"><option value="">-- Recibió --</option></select>
         <select id="assignedTo"><option value="">-- Asignado a --</option></select>
-        <button id="submitRepair" type="submit">Agregar reparación</button>
-        <button id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none; margin-left:8px; background:transparent; border:1px solid var(--border);">Cancelar</button>
+
+        <div class="form-actions">
+          <button id="submitRepair" type="submit">Agregar reparación</button>
+          <button id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none; background:transparent; border:1px solid var(--border); color:var(--text);">Cancelar</button>
+        </div>
       </form>
     </div>
 
     <div class="panel">
       <h3>Reparaciones activas</h3>
       <input id="search" placeholder="Buscar cliente o teléfono">
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Teléfono</th>
-            <th>Modelo</th>
-            <th>Color</th>
-            <th>Problema</th>
-            <th>Precio</th>
-            <th>Recibido</th>
-            <th>Recibió</th>
-            <th>Asignado</th>
-            <th>Estado</th>
-            <th>Editar</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="repairsTable"></tbody>
-      </table>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th class="col-phone">Teléfono</th>
+              <th class="col-model">Modelo</th>
+              <th class="col-color">Color</th>
+              <th class="col-issue">Problema</th>
+              <th class="col-price">Precio</th>
+              <th class="col-receivedAt">Recibido</th>
+              <th class="col-receivedBy">Recibió</th>
+              <th class="col-assigned">Asignado</th>
+              <th class="col-status">Estado</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="repairsTable"></tbody>
+        </table>
+      </div>
+
+      <!-- ✅ Pager Activas -->
+      <div id="activePager"></div>
     </div>
 
     <div class="panel">
       <details>
         <summary>📦 Ver historial de reparaciones completadas</summary>
-        <table class="details-table">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Teléfono</th>
-              <th>Modelo</th>
-              <th>Color</th>
-              <th>Problema</th>
-              <th>Precio</th>
-              <th>Recibido</th>
-              <th>Recibió</th>
-              <th>Asignado</th>
-              <th>Estado</th>
-              <th>Entregó</th>
-              <th>Editar</th>
-              <th>Repuestos</th>
-            </tr>
-          </thead>
-          <tbody id="completedTable"></tbody>
-        </table>
+
+        <div class="table-wrap">
+          <table class="details-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th class="col-phone">Teléfono</th>
+                <th class="col-model">Modelo</th>
+                <th class="col-color">Color</th>
+                <th class="col-issue">Problema</th>
+                <th class="col-price">Precio</th>
+                <th class="col-receivedAt">Recibido</th>
+                <th class="col-receivedBy">Recibió</th>
+                <th class="col-assigned">Asignado</th>
+                <th class="col-status">Estado</th>
+                <th class="col-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="completedTable"></tbody>
+          </table>
+        </div>
+
+        <!-- ✅ Pager Historial -->
+        <div id="completedPager"></div>
       </details>
     </div>
   </main>
 
-  <!-- ✅ Modal Repuestos -->
+  <!-- Modal Repuestos -->
   <div class="modal-overlay" id="partsModal">
     <div class="modal" role="dialog" aria-modal="true">
       <h3 id="partsTitle">Usar repuestos</h3>
