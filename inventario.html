@@ -30,31 +30,48 @@ body {
 
 header{ padding:20px; border-bottom:1px solid var(--border); }
 main{ padding:24px; max-width:1400px; margin:auto; }
- /* Sidebar */
-      aside {
-        width: 240px;
-        background: #020617;
-        border-right: 1px solid var(--border);
-        padding: 20px;
-      }
 
-      aside h2 {
-        font-size: 18px;
-        margin-bottom: 30px;
-      }
+/* Sidebar */
+aside {
+  width: 240px;
+  background: #020617;
+  border-right: 1px solid var(--border);
+  padding: 20px;
+}
+aside h2 {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+nav a {
+  display: block;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  background: transparent;
+}
 
-      nav a {
-        display: block;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        border-radius: 10px;
-        color: var(--text);
-        text-decoration: none;
-        background: transparent;
-      }
-.panel{ background:linear-gradient(180deg,var(--panel),var(--panel-soft)); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:20px; }
-input,select,button{ padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#020617; color:var(--text); }
-button{ background:var(--primary); color:#020617; font-weight:600; cursor:pointer; }
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel-soft));
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+}
+input,select,button{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+}
+button{
+  background:var(--primary);
+  color:#020617;
+  font-weight:600;
+  cursor:pointer;
+}
 button:hover{ background:var(--primary-hover) }
 table{ width:100%; border-collapse:collapse; margin-top:12px; }
 th,td{ padding:12px; border-bottom:1px solid var(--border); }
@@ -62,7 +79,10 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); }
 .table-responsive table{ width:100%; min-width:0; }
 .table-responsive th,.table-responsive td{ word-break:break-word; white-space:normal; }
 .pager{ display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap:wrap }
-.pager button{ padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer }
+.pager button{
+  padding:6px 8px; border-radius:8px; border:1px solid var(--border);
+  background:transparent; color:var(--text); cursor:pointer
+}
 .pager button[disabled]{ opacity:.4; cursor:default }
 .badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600; }
 .pantalla{ background:rgba(34,197,94,.15); color:var(--green) }
@@ -73,37 +93,37 @@ th,td{ padding:12px; border-bottom:1px solid var(--border); }
 .out{ background:rgba(239,68,68,.25); color:var(--red) }
 .del{ background:rgba(148,163,184,.2) }
 details{ margin-top:12px; }
-  /* Responsive tweaks (copiado de reparaciones.html) */
-      @media (max-width: 800px) {
-        body { flex-direction: column; }
-        aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
-        main { padding: 14px; }
-        nav a { display: inline-block; margin-right: 8px; }
-        .panel { padding: 12px; }
-        input, select, button { width: 100%; margin-top: 8px; }
-        .panel { overflow-x: auto; }
-        table { min-width: 0; table-layout:fixed; }
-        th,td{ padding:8px; }
-        .details-table th, .details-table td { font-size: 13px; }
-      }
 
+/* Responsive tweaks (copiado de reparaciones.html) */
+@media (max-width: 800px) {
+  body { flex-direction: column; }
+  aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+  main { padding: 14px; }
+  nav a { display: inline-block; margin-right: 8px; }
+  .panel { padding: 12px; }
+  input, select, button { width: 100%; margin-top: 8px; }
+  .panel { overflow-x: auto; }
+  table { min-width: 0; table-layout:fixed; }
+  th,td{ padding:8px; }
+  .details-table th, .details-table td { font-size: 13px; }
+}
 </style>
 
 <!-- 🔹 Firebase modular v10 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-  import { getDatabase, ref, onValue, push, set, update, remove } 
+  import { getDatabase, ref, onValue, push, set, update, remove }
     from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
 
   // Configuración de Firebase
   const firebaseConfig = {
-     apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
-  authDomain: "control-de-inventario-633f5.firebaseapp.com",
-  databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
-  projectId: "control-de-inventario-633f5",
-  storageBucket: "control-de-inventario-633f5.firebasestorage.app",
-  messagingSenderId: "1012694355492",
-  appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+    apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+    authDomain: "control-de-inventario-633f5.firebaseapp.com",
+    databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+    projectId: "control-de-inventario-633f5",
+    storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+    messagingSenderId: "1012694355492",
+    appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -115,6 +135,7 @@ details{ margin-top:12px; }
   let costs = [];
   let showAllLogs = false;
   const LOGS_PREVIEW = 5;
+
   let models = [
     'iPhone 8','iPhone 8 Plus','iPhone X','iPhone XR','iPhone XS','iPhone XS Max',
     'iPhone 11','iPhone 11 Pro','iPhone 11 Pro Max',
@@ -126,160 +147,11 @@ details{ margin-top:12px; }
     'iPhone 17','iPhone 17 Pro','iPhone 17 Pro Max',
     'Samsung S21 Ultra','Samsung S22 Ultra','Samsung S23 Ultra','Samsung S24 Ultra','Samsung S25 Ultra'
   ];
-  // Elementos DOM
-  const modelInput = document.getElementById('model');
-  const descInput = document.getElementById('desc');
-  const typeSelect = document.getElementById('type');
-  const addBtn = document.getElementById('addModel');
-  const table = document.getElementById('table');
-  const search = document.getElementById('search');
-  const logsT = document.getElementById('logs');
-  const costsT = document.getElementById('costs');
-  const modelsList = document.getElementById('models');
-
-  function refreshModels(){
-    modelsList.innerHTML = models.map(m=>`<option value="${m}">`).join('');
-  }
-  refreshModels();
-
-  // Escuchar stock
-onValue(ref(db,'stock'), snapshot=>{
-  stock = [];
-  snapshot.forEach(child=>{
-    stock.push({id: child.key, ...child.val()});
-  });
-  console.log("Stock actualizado:", stock);
-  renderAll();
-});
-
-// Escuchar logs
-onValue(ref(db,'logs'), snapshot=>{
-  logs = [];
-  snapshot.forEach(child=>{
-    logs.push({id: child.key, ...child.val()});
-  });
-  console.log("Logs actualizados:", logs);
-  renderAll();
-});
-
-// Escuchar costs
-onValue(ref(db,'costs'), snapshot=>{
-  costs = [];
-  snapshot.forEach(child=>{
-    costs.push({id: child.key, ...child.val()});
-  });
-  console.log("Costs actualizados:", costs);
-  renderAll();
-});
-
-// Botón agregar modelo
-addBtn.onclick = ()=>{
-  const model = modelInput.value.trim();
-  const desc = descInput.value.trim();
-  const type = typeSelect.value;
-  if(!model) return;
-
-  if(!models.includes(model)){
-    models.push(model);
-    refreshModels();
-  }
-
-  // 🔹 Guardar en Firebase
-  const newItemRef = push(ref(db,'stock'));
-  set(newItemRef, { model, type, desc, qty: 0 })
-    .then(()=>{
-      console.log("Agregado:", model, type, desc);
-    })
-    .catch(err=>console.error("Error al guardar:", err));
-
-  modelInput.value = '';
-  descInput.value = '';
-};
-
-
-  window.move = (id, dir)=>{
-    const item = stock.find(i=>i.id===id);
-    if(!item) return;
-    if(dir === 'out'){
-      // Diálogo para salida que pide cantidad y autorizador
-      showOutDialog(item, (qty, authorizer) => {
-        if(!qty || qty <= 0) return;
-        if(item.qty < qty){ alert('Stock insuficiente'); return; }
-        if(!authorizer){ alert('Selecciona un autorizador'); return; }
-
-        // ✅ CAMBIO: guardar también type en logs
-        set(push(ref(db,'logs')), {
-          date: new Date().toLocaleString(),
-          model: item.model,
-          type: item.type,     // ✅ NUEVO
-          action: 'Salida',
-          qty,
-          authorizer
-        });
-
-        update(ref(db,'stock/'+id), { qty: item.qty - qty });
-      });
-      return;
-    }
-
-    // Entrada
-    const qty = parseInt(prompt('Cantidad'));
-    if(!qty || qty <= 0) return;
-    const price = parseFloat(prompt('Precio unitario de compra'));
-    if(!price || price <=0) return;
-
-    // ✅ CAMBIO: guardar también type en costs
-    const newCost = { date: new Date().toLocaleString(), model:item.model, type:item.type, qty, price, total: qty*price };
-    set(push(ref(db,'costs')), newCost);
-
-    // ✅ CAMBIO: guardar también type en logs
-    set(push(ref(db,'logs')), {
-      date: new Date().toLocaleString(),
-      model: item.model,
-      type: item.type,     // ✅ NUEVO
-      action: 'Entrada',
-      qty
-    });
-
-    update(ref(db,'stock/'+id), { qty: item.qty + qty });
-  }
 
   // Autorizadores permitidos
   const authorizers = ['Jamil','Jonathan'];
 
-  function showOutDialog(item, cb){
-    if(document.getElementById('outModal')) return;
-    const overlay = document.createElement('div');
-    overlay.id = 'outModal';
-    overlay.style.position = 'fixed'; overlay.style.inset = 0; overlay.style.background = 'rgba(0,0,0,.4)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center'; overlay.style.zIndex=9999;
-    const box = document.createElement('div');
-    box.style.background = '#0f172a'; box.style.border = '1px solid #1e293b'; box.style.padding = '18px'; box.style.borderRadius='10px'; box.style.color = 'var(--text)'; box.style.minWidth='320px';
-    box.innerHTML = `<div style="margin-bottom:8px;font-weight:700">Salida autorizada</div><div style="margin-bottom:8px">Modelo: ${item.model}</div>`;
-    const qtyInput = document.createElement('input'); qtyInput.type='number'; qtyInput.placeholder='Cantidad'; qtyInput.style.width='100%'; qtyInput.style.marginBottom='8px'; qtyInput.min=1;
-    const select = document.createElement('select'); select.style.width='100%'; select.style.marginBottom='10px';
-    const ph = document.createElement('option'); ph.value=''; ph.textContent='-- Seleccionar autorizador --'; select.appendChild(ph);
-    authorizers.forEach(a=>{ const o=document.createElement('option'); o.value=a; o.textContent=a; select.appendChild(o); });
-    const btnRow = document.createElement('div'); btnRow.style.display='flex'; btnRow.style.gap='8px'; btnRow.style.justifyContent='flex-end';
-    const cancel = document.createElement('button'); cancel.textContent='Cancelar'; cancel.style.background='transparent'; cancel.style.border='1px solid var(--border)'; cancel.onclick = ()=>{ document.body.removeChild(overlay); cb(null); };
-    const confirm = document.createElement('button'); confirm.textContent='Confirmar'; confirm.onclick = ()=>{
-      const qty = parseInt(qtyInput.value);
-      const auth = select.value;
-      if(!qty || qty <= 0){ alert('Ingresa una cantidad válida'); return; }
-      document.body.removeChild(overlay);
-      cb(qty, auth);
-    };
-    btnRow.appendChild(cancel); btnRow.appendChild(confirm);
-    box.appendChild(qtyInput); box.appendChild(select); box.appendChild(btnRow);
-    overlay.appendChild(box); document.body.appendChild(overlay);
-  }
-
-  window.removeItem = (id)=>{
-    const item = stock.find(i=>i.id===id);
-    if(!item) return;
-    if(!confirm(`Eliminar ${item.model} (${item.desc})?`)) return;
-    remove(ref(db,'stock/'+id));
-  }
-
+  // Paginación
   const PAGE_SIZE = 6;
   let invPage = 1, logsPage = 1, costsPage = 1;
 
@@ -307,30 +179,223 @@ addBtn.onclick = ()=>{
     if(type==='inv'){ invPage = Math.min(Math.max(1,page),100000); renderInventory(); }
     if(type==='logs'){ logsPage = Math.min(Math.max(1,page),100000); renderLogs(); }
     if(type==='costs'){ costsPage = Math.min(Math.max(1,page),100000); renderCosts(); }
+  };
+
+  // Modal salida (autorizador)
+  function showOutDialog(item, cb){
+    if(document.getElementById('outModal')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'outModal';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = 0;
+    overlay.style.background = 'rgba(0,0,0,.4)';
+    overlay.style.display='flex';
+    overlay.style.alignItems='center';
+    overlay.style.justifyContent='center';
+    overlay.style.zIndex=9999;
+
+    const box = document.createElement('div');
+    box.style.background = '#0f172a';
+    box.style.border = '1px solid #1e293b';
+    box.style.padding = '18px';
+    box.style.borderRadius='10px';
+    box.style.color = 'var(--text)';
+    box.style.minWidth='320px';
+
+    box.innerHTML = `
+      <div style="margin-bottom:8px;font-weight:700">Salida autorizada</div>
+      <div style="margin-bottom:8px">Modelo: ${item.model}</div>
+    `;
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type='number';
+    qtyInput.placeholder='Cantidad';
+    qtyInput.style.width='100%';
+    qtyInput.style.marginBottom='8px';
+    qtyInput.min=1;
+
+    const select = document.createElement('select');
+    select.style.width='100%';
+    select.style.marginBottom='10px';
+    const ph = document.createElement('option');
+    ph.value='';
+    ph.textContent='-- Seleccionar autorizador --';
+    select.appendChild(ph);
+    authorizers.forEach(a=>{
+      const o=document.createElement('option');
+      o.value=a; o.textContent=a;
+      select.appendChild(o);
+    });
+
+    const btnRow = document.createElement('div');
+    btnRow.style.display='flex';
+    btnRow.style.gap='8px';
+    btnRow.style.justifyContent='flex-end';
+
+    const cancel = document.createElement('button');
+    cancel.textContent='Cancelar';
+    cancel.style.background='transparent';
+    cancel.style.border='1px solid var(--border)';
+    cancel.onclick = ()=>{
+      document.body.removeChild(overlay);
+      cb(null);
+    };
+
+    const confirm = document.createElement('button');
+    confirm.textContent='Confirmar';
+    confirm.onclick = ()=>{
+      const qty = parseInt(qtyInput.value);
+      const auth = select.value;
+      if(!qty || qty <= 0){ alert('Ingresa una cantidad válida'); return; }
+      if(!auth){ alert('Selecciona un autorizador'); return; }
+      document.body.removeChild(overlay);
+      cb(qty, auth);
+    };
+
+    btnRow.appendChild(cancel);
+    btnRow.appendChild(confirm);
+    box.appendChild(qtyInput);
+    box.appendChild(select);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   }
 
+  function refreshModels(){
+    const modelsList = document.getElementById('models');
+    if(!modelsList) return;
+    modelsList.innerHTML = models.map(m=>`<option value="${m}">`).join('');
+  }
+
+  // =========================
+  // LISTENERS FIREBASE
+  // =========================
+  onValue(ref(db,'stock'), snapshot=>{
+    stock = [];
+    snapshot.forEach(child=>{
+      stock.push({id: child.key, ...child.val()});
+    });
+    renderAll();
+  });
+
+  onValue(ref(db,'logs'), snapshot=>{
+    logs = [];
+    snapshot.forEach(child=>{
+      logs.push({id: child.key, ...child.val()});
+    });
+    renderAll();
+  });
+
+  onValue(ref(db,'costs'), snapshot=>{
+    costs = [];
+    snapshot.forEach(child=>{
+      costs.push({id: child.key, ...child.val()});
+    });
+    renderAll();
+  });
+
+  // =========================
+  // ACCIONES
+  // =========================
+  window.move = (id, dir)=>{
+    const item = stock.find(i=>i.id===id);
+    if(!item) return;
+
+    if(dir === 'out'){
+      // Salida (autorizada)
+      showOutDialog(item, (qty, authorizer) => {
+        if(!qty || qty <= 0) return;
+        if(item.qty < qty){ alert('Stock insuficiente'); return; }
+
+        // ✅ CORREGIDO: guardar stockId para no confundir categoría
+        set(push(ref(db,'logs')), {
+          date: new Date().toLocaleString(),
+          stockId: item.id,   // ✅ NUEVO
+          model: item.model,
+          type: item.type,
+          action: 'Salida',
+          qty,
+          authorizer
+        });
+
+        update(ref(db,'stock/'+id), { qty: (item.qty||0) - qty });
+      });
+      return;
+    }
+
+    // Entrada
+    const qty = parseInt(prompt('Cantidad'));
+    if(!qty || qty <= 0) return;
+
+    const price = parseFloat(prompt('Precio unitario de compra'));
+    if(!price || price <= 0) return;
+
+    // ✅ CORREGIDO: guardar stockId en costs
+    const newCost = {
+      date: new Date().toLocaleString(),
+      stockId: item.id,     // ✅ NUEVO
+      model: item.model,
+      type: item.type,
+      qty,
+      price,
+      total: qty * price
+    };
+    set(push(ref(db,'costs')), newCost);
+
+    // ✅ CORREGIDO: guardar stockId en logs
+    set(push(ref(db,'logs')), {
+      date: new Date().toLocaleString(),
+      stockId: item.id,     // ✅ NUEVO
+      model: item.model,
+      type: item.type,
+      action: 'Entrada',
+      qty
+    });
+
+    update(ref(db,'stock/'+id), { qty: (item.qty||0) + qty });
+  };
+
+  window.removeItem = (id)=>{
+    const item = stock.find(i=>i.id===id);
+    if(!item) return;
+    if(!confirm(`Eliminar ${item.model} (${item.desc||'-'})?`)) return;
+    remove(ref(db,'stock/'+id));
+  };
+
+  // =========================
+  // RENDER
+  // =========================
   function renderInventory(){
+    const search = document.getElementById('search');
+    const table = document.getElementById('table');
+    if(!search || !table) return;
+
     const s = (search.value||'').toLowerCase();
     const ftEl = document.getElementById('filterType');
     const ft = ftEl ? ftEl.value : '';
+
     const filtered = stock.filter(i=>{
       const matchesSearch = !s || (i.model||'').toLowerCase().includes(s);
       const matchesFilter = !ft || (i.type === ft);
       return matchesSearch && matchesFilter;
     });
+
     const { items, total } = paginate(filtered, invPage);
+
     table.innerHTML = items.map(i=>`
       <tr>
-        <td>${i.model}</td>
-        <td><span class="badge ${i.type}">${i.type}</span></td>
+        <td>${i.model||'-'}</td>
+        <td><span class="badge ${i.type||''}">${i.type||'-'}</span></td>
         <td>${i.desc||'-'}</td>
-        <td>${i.qty}</td>
+        <td>${i.qty ?? 0}</td>
         <td class="actions">
           <button class="in" onclick="move('${i.id}','in')">➕</button>
           <button class="out" onclick="move('${i.id}','out')">➖</button>
           <button class="del" onclick="removeItem('${i.id}')">🗑️</button>
         </td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
+
     renderPager('inventoryPager','inv', total, invPage);
   }
 
@@ -338,69 +403,96 @@ addBtn.onclick = ()=>{
     const logsEl = document.getElementById('logs');
     if(!logsEl) return;
 
+    // ✅ CORREGIDO: categoría por stockId (si existe) para evitar errores por modelo duplicado
+    const typeFromLog = (l)=>{
+      return (
+        l.type ||
+        (l.stockId ? (stock.find(s=>s.id === l.stockId)?.type) : null) ||
+        '-'
+      );
+    };
+
     if(showAllLogs){
-      // show paginated full list (newest first)
       const reversed = logs.slice().reverse();
       const { items, total } = paginate(reversed, logsPage);
 
-      // ✅ CAMBIO: agregar columna Categoría (con fallback por si logs viejos no tienen type)
       logsEl.innerHTML = items.map(l=>{
-        const t = l.type || (stock.find(s=>s.model===l.model)?.type) || '-';
+        const t = typeFromLog(l);
         return `
           <tr>
-            <td>${l.date}</td>
-            <td>${l.model}</td>
+            <td>${l.date||'-'}</td>
+            <td>${l.model||'-'}</td>
             <td><span class="badge ${t}">${t}</span></td>
-            <td>${l.action}</td>
-            <td>${l.qty}</td>
+            <td>${l.action||'-'}</td>
+            <td>${l.qty ?? '-'}</td>
             <td>${l.authorizer||'-'}</td>
           </tr>
         `;
       }).join('');
 
       renderPager('logsPager','logs', total, logsPage);
-      const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver menos';
-      const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = logs.length;
-      const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = '';
+
+      const toggle = document.getElementById('toggleLogs');
+      if(toggle) toggle.textContent = 'Ver menos';
+
+      const previewCount = document.getElementById('logsCountPreview');
+      if(previewCount) previewCount.textContent = logs.length;
+
+      const pagerEl = document.getElementById('logsPager');
+      if(pagerEl) pagerEl.style.display = '';
     } else {
-      // show only last N entries (preview)
       const preview = logs.slice(-LOGS_PREVIEW).reverse();
 
-      // ✅ CAMBIO: agregar columna Categoría (con fallback por si logs viejos no tienen type)
       logsEl.innerHTML = preview.map(l=>{
-        const t = l.type || (stock.find(s=>s.model===l.model)?.type) || '-';
+        const t = typeFromLog(l);
         return `
           <tr>
-            <td>${l.date}</td>
-            <td>${l.model}</td>
+            <td>${l.date||'-'}</td>
+            <td>${l.model||'-'}</td>
             <td><span class="badge ${t}">${t}</span></td>
-            <td>${l.action}</td>
-            <td>${l.qty}</td>
+            <td>${l.action||'-'}</td>
+            <td>${l.qty ?? '-'}</td>
             <td>${l.authorizer||'-'}</td>
           </tr>
         `;
       }).join('');
 
-      const pagerEl = document.getElementById('logsPager'); if(pagerEl) pagerEl.style.display = 'none';
-      const toggle = document.getElementById('toggleLogs'); if(toggle) toggle.textContent = 'Ver todo';
-      const previewCount = document.getElementById('logsCountPreview'); if(previewCount) previewCount.textContent = Math.min(LOGS_PREVIEW, logs.length);
+      const pagerEl = document.getElementById('logsPager');
+      if(pagerEl) pagerEl.style.display = 'none';
+
+      const toggle = document.getElementById('toggleLogs');
+      if(toggle) toggle.textContent = 'Ver todo';
+
+      const previewCount = document.getElementById('logsCountPreview');
+      if(previewCount) previewCount.textContent = Math.min(LOGS_PREVIEW, logs.length);
     }
   }
 
   function renderCosts(){
+    const costsT = document.getElementById('costs');
+    if(!costsT) return;
+
+    // ✅ CORREGIDO: categoría por stockId (si existe)
+    const typeFromCost = (c)=>{
+      return (
+        c.type ||
+        (c.stockId ? (stock.find(s=>s.id === c.stockId)?.type) : null) ||
+        '-'
+      );
+    };
+
     const { items, total } = paginate(costs, costsPage);
 
-    // ✅ CAMBIO: agregar columna Categoría (con fallback por si costs viejos no tienen type)
     costsT.innerHTML = items.map(c=>{
-      const t = c.type || (stock.find(s=>s.model===c.model)?.type) || '-';
+      const t = typeFromCost(c);
       return `
         <tr>
-          <td>${c.date}</td>
-          <td>${c.model}</td>
+          <td>${c.date||'-'}</td>
+          <td>${c.model||'-'}</td>
           <td><span class="badge ${t}">${t}</span></td>
-          <td>${c.qty}</td>
-          <td>${c.price}</td>
-          <td>${c.total}</td>
+          <td>${c.qty ?? '-'}</td>
+          <td>${c.price ?? '-'}</td>
+          <td>${c.total ?? '-'}</td>
         </tr>
       `;
     }).join('');
@@ -410,9 +502,46 @@ addBtn.onclick = ()=>{
 
   function renderAll(){ renderInventory(); renderLogs(); renderCosts(); }
 
-  search.oninput = ()=>{ invPage = 1; renderInventory(); };
-  // Attach toggle behavior after DOM is ready (button is inside a <details>)
+  // =========================
+  // DOM READY
+  // =========================
   document.addEventListener('DOMContentLoaded', ()=>{
+    refreshModels();
+
+    const addBtn = document.getElementById('addModel');
+    const modelInput = document.getElementById('model');
+    const descInput  = document.getElementById('desc');
+    const typeSelect = document.getElementById('type');
+    const search     = document.getElementById('search');
+
+    if(addBtn){
+      addBtn.onclick = ()=>{
+        const model = (modelInput?.value || '').trim();
+        const desc  = (descInput?.value || '').trim();
+        const type  = (typeSelect?.value || '').trim();
+        if(!model) return;
+
+        if(!models.includes(model)){
+          models.push(model);
+          refreshModels();
+        }
+
+        const newItemRef = push(ref(db,'stock'));
+        set(newItemRef, { model, type, desc, qty: 0 })
+          .catch(err=>console.error("Error al guardar:", err));
+
+        if(modelInput) modelInput.value = '';
+        if(descInput) descInput.value = '';
+      };
+    }
+
+    if(search){
+      search.oninput = ()=>{
+        invPage = 1;
+        renderInventory();
+      };
+    }
+
     const toggle = document.getElementById('toggleLogs');
     if(toggle){
       toggle.addEventListener('click', ()=>{
@@ -421,11 +550,14 @@ addBtn.onclick = ()=>{
         renderLogs();
       });
     }
+
+    // Render inicial (por si Firebase tarda)
+    renderAll();
   });
 </script>
-  </head>
-<body>
+</head>
 
+<body>
 
   <!-- SIDEBAR -->
   <aside>
@@ -434,6 +566,7 @@ addBtn.onclick = ()=>{
       <a href="index.html">🏠 Dashboard</a>
       <a href="inventario.html" style="background:#0f172a">🧾 Inventario</a>
       <a href="reparaciones.html">🔧 Reparaciones</a>
+      <a href="proceso.html">⚡ Proceso (TV)</a>
     </nav>
   </aside>
 
@@ -471,71 +604,78 @@ addBtn.onclick = ()=>{
         <option value="bateria">Baterías</option>
         <option value="tapas">Tapas</option>
       </select>
+
       <div class="table-responsive">
         <table>
-        <thead>
-          <tr>
-            <th>Modelo</th>
-            <th>Tipo</th>
-            <th>Descripción</th>
-            <th>Cantidad</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="table"></tbody>
-      </table>
-        </div>
-        <div class="pager" id="inventoryPager"></div>
+          <thead>
+            <tr>
+              <th>Modelo</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Cantidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="table"></tbody>
+        </table>
+      </div>
+
+      <div class="pager" id="inventoryPager"></div>
     </div>
 
     <!-- Panel de historial -->
     <div class="panel">
       <h3>Historial de movimientos</h3>
+
       <details>
         <summary>📋 Ver últimos movimientos</summary>
         <div style="margin-top:8px; color:var(--muted); font-size:13px">
-          Mostrando <span id="logsCountPreview">5</span> últimos. <button id="toggleLogs" style="margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer">Ver todo</button>
+          Mostrando <span id="logsCountPreview">5</span> últimos.
+          <button id="toggleLogs" style="margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer">Ver todo</button>
         </div>
+
         <div class="table-responsive" style="margin-top:8px">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Modelo</th>
-              <th>Categoría</th> <!-- ✅ NUEVO -->
-              <th>Acción</th>
-              <th>Cantidad</th>
-              <th>Autorizó</th>
-            </tr>
-          </thead>
-          <tbody id="logs"></tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Modelo</th>
+                <th>Categoría</th>
+                <th>Acción</th>
+                <th>Cantidad</th>
+                <th>Autorizó</th>
+              </tr>
+            </thead>
+            <tbody id="logs"></tbody>
+          </table>
         </div>
+
         <div class="pager" id="logsPager"></div>
       </details>
 
       <details>
         <summary>📊 Ver historial de costos (interno)</summary>
+
         <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Modelo</th>
-              <th>Categoría</th> <!-- ✅ NUEVO -->
-              <th>Cantidad</th>
-              <th>Precio unitario</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody id="costs"></tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Modelo</th>
+                <th>Categoría</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="costs"></tbody>
+          </table>
         </div>
+
         <div class="pager" id="costsPager"></div>
       </details>
     </div>
 
   </main>
 </body>
-
 </html>
