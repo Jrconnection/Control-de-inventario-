@@ -916,7 +916,7 @@ activePage = 1;
       const actionsHTML = `
         <button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>
         ${r.status!=='Completado'
-          ? `<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶️ Proceso</button>
+          ? `<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶ Proceso</button>
              <button class="action-btn action-green" onclick="updateStatus('${r.id}','Completado')">✓ Completar</button>`
           : ''
         }
