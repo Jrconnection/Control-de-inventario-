@@ -332,11 +332,14 @@ main{ padding:12px; }
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // ✅ Mantengo tus nombres EXACTOS (para que siga mostrando)
-  const TECHS = ['Jonathan','Engell','Geovany'];
+  // ✅ Keys normalizadas (evita fallos por mayúsculas/espacios)
+  const TECH_KEYS = ['jonathan','engell','geovany'];
+  const TECH_LABEL = { jonathan:'Jonathan', engell:'Engell', geovany:'Geovany' };
 
   const MAX_VISIBLE_PER_TECH = 10;
-  const t = (s)=> (s||'').toString().trim();
+
+  function t(s){ return (s||'').toString().trim(); }
+  function norm(s){ return (s||'').toString().trim().toLowerCase(); }
 
   function nowLocalString(){ return new Date().toLocaleString(); }
   function startOfTodayTS(){
@@ -351,6 +354,24 @@ main{ padding:12px; }
     el.style.display = 'block';
     clearTimeout(window.__toastTimer);
     window.__toastTimer = setTimeout(()=> el.style.display = 'none', 1600);
+  }
+
+  // ✅ Normaliza status para no perder items por variantes
+  function normStatus(s){
+    const x = norm(s);
+    if(x === 'en proceso' || x === 'enproceso' || x === 'proceso' || x === 'en proceso ') return 'En Proceso';
+    if(x === 'completado' || x === 'completar' || x === 'completa') return 'Completado';
+    if(x === 'cancelado' || x === 'entregado sin reparar') return 'Cancelado';
+    return 'Pendiente';
+  }
+
+  // ✅ Normaliza técnico para que TECH_KEYS siempre matchee
+  function normTech(s){
+    const x = norm(s);
+    if(x.includes('jonath')) return 'jonathan';
+    if(x.includes('engel'))  return 'engell';
+    if(x.includes('geova'))  return 'geovany';
+    return x;
   }
 
   // ✅ Sin confirmación: set estado directo
@@ -376,15 +397,16 @@ main{ padding:12px; }
     toast(`✅ ${model || 'Equipo'} → ${newStatus}`);
   };
 
-  function techColor(tech){
-    if(tech === 'Engell') return 'var(--engell)';
-    if(tech === 'Geovany') return 'var(--geovany)';
+  function techColor(techLabel){
+    if(techLabel === 'Engell') return 'var(--engell)';
+    if(techLabel === 'Geovany') return 'var(--geovany)';
     return 'var(--jonathan)'; // Jonathan
   }
 
   function statusTag(status){
     if(status === 'En Proceso') return `<span class="tag process"><span class="dot"></span>En proceso</span>`;
     if(status === 'Completado') return `<span class="tag done"><span class="dot"></span>Completado</span>`;
+    if(status === 'Cancelado') return `<span class="tag pending"><span class="dot"></span>Cancelado</span>`;
     return `<span class="tag pending"><span class="dot"></span>Pendiente</span>`;
   }
 
@@ -435,12 +457,12 @@ main{ padding:12px; }
     `;
   }
 
-  function renderColumn(tech, items){
+  function renderColumn(techLabel, items){
     const pending = items.filter(r=> t(r.status) === 'Pendiente');
     const inprog  = items.filter(r=> t(r.status) === 'En Proceso');
     const done    = items.filter(r=> t(r.status) === 'Completado');
 
-    // Orden: proceso, pendiente, completado (para que se vea lo importante arriba)
+    // Orden visual: proceso, pendiente, completado
     const ordered = [...inprog, ...pending, ...done];
 
     const visible = ordered.slice(0, MAX_VISIBLE_PER_TECH);
@@ -454,13 +476,13 @@ main{ padding:12px; }
       ? `<div class="more">+${hiddenCount} más…</div>`
       : '';
 
-    const color = techColor(tech);
+    const color = techColor(techLabel);
 
     return `
       <section class="col" style="--tcolor:${color}">
         <div class="col-head">
           <div>
-            <div class="name"><span class="name-dot"></span>${tech}</div>
+            <div class="name"><span class="name-dot"></span>${techLabel}</div>
             <div class="sub">Proc/Pend/Comp se actualiza en vivo</div>
           </div>
           <div class="counts">
@@ -481,25 +503,37 @@ main{ padding:12px; }
   function render(allRepairs){
     const grid = document.getElementById('grid');
 
-    // ✅ AHORA incluye también Completado (para que se vea)
+    // ✅ solo no entregadas + asignadas a técnicos reconocidos
     const filtered = allRepairs.filter(r=>{
-      const assignedTo = t(r.assignedTo || r.responsible);
-      const status = t(r.status);
+      const key = r._assignedKey || normTech(r.assignedTo || r.responsible);
       const notDelivered = r.delivered !== true;
 
-      return notDelivered
-        && TECHS.includes(assignedTo)
-        && (status === 'Pendiente' || status === 'En Proceso' || status === 'Completado');
+      // Permitimos Pendiente/En Proceso/Completado (Cancelado NO se muestra en TV)
+      const st = t(r.status);
+      const okStatus = (st === 'Pendiente' || st === 'En Proceso' || st === 'Completado');
+
+      return notDelivered && TECH_KEYS.includes(key) && okStatus;
     });
 
     const byTech = {};
-    TECHS.forEach(tech => byTech[tech] = []);
+    TECH_KEYS.forEach(k => byTech[k] = []);
+
     filtered.forEach(r=>{
-      const tech = t(r.assignedTo || r.responsible);
-      byTech[tech].push(r);
+      const k = r._assignedKey || normTech(r.assignedTo || r.responsible);
+      byTech[k].push(r);
     });
 
-    grid.innerHTML = TECHS.map(tech => renderColumn(tech, byTech[tech])).join('');
+    // ✅ dentro de cada técnico: más recientes arriba
+    TECH_KEYS.forEach(k=>{
+      byTech[k].sort((a,b)=>{
+        const ta = Number(a.receivedAtTS || 0);
+        const tb = Number(b.receivedAtTS || 0);
+        if(tb !== ta) return tb - ta;
+        return String(b.id).localeCompare(String(a.id));
+      });
+    });
+
+    grid.innerHTML = TECH_KEYS.map(k => renderColumn(TECH_LABEL[k], byTech[k])).join('');
   }
 
   onValue(ref(db,'repairs'), snap=>{
@@ -508,10 +542,17 @@ main{ padding:12px; }
       repairs.push({ id: child.key, ...child.val() });
     });
 
-    const normalized = repairs.map(r=>({
-      ...r,
-      assignedTo: r.assignedTo || r.responsible || ''
-    }));
+    const normalized = repairs.map(r=>{
+      const assignedRaw = r.assignedTo ?? r.responsible ?? '';
+      const key = normTech(assignedRaw);
+
+      return {
+        ...r,
+        assignedTo: TECH_LABEL[key] || t(assignedRaw), // etiqueta bonita
+        _assignedKey: key,                              // key normalizada
+        status: normStatus(r.status),                   // status normalizado
+      };
+    });
 
     render(normalized);
     document.getElementById('clock').textContent = new Date().toLocaleString();
