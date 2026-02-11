@@ -114,11 +114,12 @@ button:disabled{
   padding:0 14px;
 }
 
-/* Table wrapper (evita que se salga) */
+/* Table wrapper */
 .table-wrap{
   width:100%;
   overflow-x:auto;
   border-radius:12px;
+  -webkit-overflow-scrolling:touch;
 }
 
 /* Table */
@@ -127,8 +128,8 @@ table{
   border-collapse:separate;
   border-spacing:0;
   margin-top:12px;
-  table-layout: fixed; /* ✅ importante para que no se expanda infinito */
-  min-width: 980px;    /* respaldo si la pantalla es pequeña */
+  table-layout: fixed;
+  min-width: 980px;
 }
 thead th{
   position:sticky;
@@ -147,21 +148,18 @@ th,td{
   white-space:nowrap;
 }
 
-/* Column sizing (ajusta anchos) */
-th.col-phone, td.col-phone{ width: 140px; }
-th.col-model, td.col-model{ width: 150px; }
-th.col-color, td.col-color{ width: 110px; }
-th.col-price, td.col-price{ width: 110px; }
-th.col-receivedAt, td.col-receivedAt{ width: 165px; }
-th.col-receivedBy, td.col-receivedBy{ width: 120px; }
-th.col-assigned, td.col-assigned{ width: 120px; }
-th.col-status, td.col-status{ width: 110px; }
-th.col-actions, td.col-actions{ width: 320px; } /* ✅ espacio fijo para acciones */
-
-/* allow issue to show a bit more but still clipped */
-th.col-issue, td.col-issue{
-  white-space:nowrap;
-}
+/* Column sizing */
+th.col-client, td.col-client{ width:160px; }
+th.col-phone,  td.col-phone{ width:140px; }
+th.col-model,  td.col-model{ width:150px; }
+th.col-color,  td.col-color{ width:110px; }
+th.col-issue,  td.col-issue{ width:260px; }
+th.col-price,  td.col-price{ width:110px; }
+th.col-receivedAt, td.col-receivedAt{ width:165px; }
+th.col-receivedBy, td.col-receivedBy{ width:120px; }
+th.col-assigned,   td.col-assigned{ width:120px; }
+th.col-status, td.col-status{ width:110px; }
+th.col-actions, td.col-actions{ width:320px; }
 
 /* Badges */
 .badge{
@@ -185,13 +183,11 @@ th.col-issue, td.col-issue{
 }
 .whatsapp-link:hover{ text-decoration:underline }
 
-/* ✅ Actions: compact chips that wrap (no overflow) */
-.actions-cell{
-  white-space:normal;          /* ✅ permite salto de línea */
-}
+/* Actions chips */
+.actions-cell{ white-space:normal; }
 .actions-wrap{
   display:flex;
-  flex-wrap:wrap;              /* ✅ se acomodan en 2 filas si hace falta */
+  flex-wrap:wrap;
   gap:6px;
   align-items:center;
 }
@@ -229,7 +225,7 @@ th.col-issue, td.col-issue{
   color: var(--yellow) !important;
 }
 
-/* Mobile actions menu */
+/* Mobile actions trigger (we will use modal) */
 .actions-menu{ position:relative; display:none; }
 .actions-trigger{
   width:40px;
@@ -244,40 +240,8 @@ th.col-issue, td.col-issue{
   cursor:pointer;
   padding:0;
 }
-.actions-dropdown{
-  position:absolute;
-  right:0;
-  top:44px;
-  min-width:220px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  box-shadow:0 14px 30px rgba(0,0,0,.35);
-  padding:6px;
-  display:none;
-  z-index:99999;
-}
-.actions-dropdown button{
-  width:100%;
-  text-align:left;
-  padding:10px 10px;
-  border-radius:10px;
-  border:1px solid transparent;
-  background:transparent;
-  color:var(--text);
-  display:flex;
-  gap:10px;
-  align-items:center;
-  font-size:14px;
-  cursor:pointer;
-  height:auto;
-}
-.actions-dropdown button:hover{
-  background:rgba(56,189,248,.12);
-  border-color:rgba(56,189,248,.18);
-}
 
-/* Modal */
+/* Modal base */
 .modal-overlay{
   position:fixed;
   inset:0;
@@ -321,6 +285,8 @@ th.col-issue, td.col-issue{
   color:var(--text) !important;
   border:1px solid var(--border) !important;
 }
+
+/* Pills */
 .pill{
   display:inline-flex;
   gap:8px;
@@ -341,7 +307,65 @@ th.col-issue, td.col-issue{
 }
 .pills-wrap{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 
-/* Responsive */
+/* ✅ Tooltip CSS para Problema (sin JS) */
+td.issue-cell{
+  position:relative;
+  overflow:visible !important;
+  cursor:help;
+}
+td.issue-cell .issue-short{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+td.issue-cell:hover::after{
+  content: attr(data-full);
+  position:absolute;
+  left:0;
+  top: calc(100% + 8px);
+  width: max-content;
+  max-width: min(520px, calc(100vw - 30px));
+  background:#0b1220;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 12px;
+  box-shadow:0 14px 30px rgba(0,0,0,.45);
+  color:var(--text);
+  font-size:13px;
+  line-height:1.35;
+  white-space:pre-wrap;
+  word-break:break-word;
+  z-index:999999;
+}
+td.issue-cell:hover::before{
+  content:"";
+  position:absolute;
+  left:18px;
+  top: calc(100% + 2px);
+  border:6px solid transparent;
+  border-bottom-color:#0b1220;
+  z-index:999999;
+}
+
+/* ✅ Botones dentro del modal de acciones */
+.modal-action-btn{
+  width:100%;
+  text-align:left;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+}
+.modal-action-btn:hover{
+  background: rgba(56,189,248,.12);
+  border-color: rgba(56,189,248,.25);
+}
+
+/* Responsive general */
 @media (max-width: 900px){
   body{ flex-direction:column; }
   aside{ width:100%; border-right:none; border-bottom:1px solid var(--border); }
@@ -351,9 +375,33 @@ th.col-issue, td.col-issue{
   #repairForm{ grid-template-columns:1fr; }
   .price-row{ grid-template-columns:1fr; }
 
-  /* móvil: ocultar chips y usar menú */
   .actions-wrap{ display:none !important; }
   .actions-menu{ display:inline-block !important; }
+}
+
+/* ✅ MÓVIL: evita tener que hacer zoom (prioriza Cliente + Problema) */
+@media (max-width: 600px){
+  table{
+    min-width: 0 !important;
+    table-layout: auto !important;
+  }
+
+  th.col-client, td.col-client{ min-width: 150px; width:auto !important; }
+  th.col-issue,  td.col-issue { min-width: 220px; width:auto !important; }
+
+  th.col-receivedAt, td.col-receivedAt,
+  th.col-receivedBy, td.col-receivedBy,
+  th.col-assigned,   td.col-assigned,
+  th.col-price,      td.col-price{
+    display:none;
+  }
+
+  th.col-actions, td.col-actions{ width: 120px !important; }
+}
+
+/* ✅ MÓVIL MUY PEQUEÑO */
+@media (max-width: 420px){
+  th.col-status, td.col-status{ display:none; }
 }
 </style>
 
@@ -389,7 +437,6 @@ th.col-issue, td.col-issue{
   let repairsTable = null;
   let completedTable = null;
 
-  // ✅ Pagination
   const PAGE_SIZE = 5;
   let activePage = 1;
   let completedPage = 1;
@@ -402,7 +449,6 @@ th.col-issue, td.col-issue{
   function renderPager(container, page, totalPages, onPrev, onNext){
     if(!container) return;
 
-    // Si no hay nada, igual mostramos 1/1 para que quede consistente
     container.innerHTML = `
       <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:12px; flex-wrap:wrap;">
         <button type="button" class="action-btn" ${page<=1?'disabled':''} id="${container.id}_prev">← Anterior</button>
@@ -437,24 +483,22 @@ th.col-issue, td.col-issue{
     return clean;
   }
 
-  function closeAllActionMenus(exceptMenu){
-    document.querySelectorAll('.actions-dropdown').forEach(dd=>{
-      const menu = dd.closest('.actions-menu');
-      if(exceptMenu && menu === exceptMenu) return;
-      dd.style.display = 'none';
-    });
-  }
-
-  window.toggleActionsMenu = (id)=>{
-    const menu = document.getElementById('actionsMenu_' + id);
-    if(!menu) return;
-    const dd = menu.querySelector('.actions-dropdown');
-    if(!dd) return;
-
-    const isOpen = dd.style.display === 'block';
-    closeAllActionMenus(menu);
-    dd.style.display = isOpen ? 'none' : 'block';
+  window.openWhatsApp = (phone, name)=>{
+    const digits = (phone||'').toString().replace(/\D/g,'');
+    if(!digits){ alert('Número inválido'); return; }
+    const message = `Hola ${name||''}, te escribo sobre el avance de tu reparación.`;
+    const url = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
   };
+
+  function escAttr(str){
+    return String(str ?? '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
 
   function populateStaffSelects(){
     const selAssigned = document.getElementById('assignedTo');
@@ -487,12 +531,46 @@ th.col-issue, td.col-issue{
     });
   }
 
-  window.openWhatsApp = (phone, name)=>{
-    const digits = (phone||'').toString().replace(/\D/g,'');
-    if(!digits){ alert('Número inválido'); return; }
-    const message = `Hola ${name||''}, te escribo sobre el avance de tu reparación.`;
-    const url = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+  // =========================
+  // ✅ MODAL DE ACCIONES (MÓVIL)
+  // =========================
+  window.openActionsModal = (repairId)=>{
+    const r = repairs.find(x=>x.id===repairId);
+    if(!r) return;
+
+    const partsCount = (r.partsUsed||[]).reduce((acc,x)=>acc + (x.qty||0), 0);
+
+    document.getElementById('actionsTitle').textContent = `Acciones • ${r.clientName || ''}`;
+    document.getElementById('actionsSub').textContent = `${r.model || ''} • ${r.clientPhone || ''}`;
+
+    const body = document.getElementById('actionsBody');
+
+    const canProgress = (r.status !== 'Completado');
+    const delivered = !!r.delivered;
+
+    body.innerHTML = `
+      <button class="modal-action-btn" onclick="startEdit('${r.id}'); closeActionsModal();">✎ Editar</button>
+
+      ${canProgress ? `
+        <button class="modal-action-btn" onclick="updateStatus('${r.id}','En Proceso'); closeActionsModal();">▶️ Marcar en proceso</button>
+        <button class="modal-action-btn" onclick="updateStatus('${r.id}','Completado'); closeActionsModal();">✓ Marcar completado</button>
+      ` : ''}
+
+      <button class="modal-action-btn" onclick="openPartsModal('${r.id}'); closeActionsModal();">🧩 Repuestos ${partsCount?`(${partsCount})`:''}</button>
+
+      ${!delivered ? `
+        <button class="modal-action-btn" onclick="markDelivered('${r.id}'); closeActionsModal();">📦 Entregar</button>
+        <button class="modal-action-btn" onclick="cancelRepair('${r.id}'); closeActionsModal();">✕ Entregar sin reparar</button>
+      ` : ''}
+    `;
+
+    const overlay = document.getElementById('actionsModal');
+    overlay.style.display = 'flex';
+  };
+
+  window.closeActionsModal = ()=>{
+    const overlay = document.getElementById('actionsModal');
+    overlay.style.display = 'none';
   };
 
   /* LISTENERS */
@@ -520,8 +598,8 @@ th.col-issue, td.col-issue{
       receivedBy: r.receivedBy || '',
       partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
     }));
-activePage = 1;
 
+    activePage = 1;
     render();
   });
 
@@ -575,8 +653,6 @@ activePage = 1;
         partsUsed: []
       });
       document.getElementById('repairForm').reset();
-
-      // ✅ opcional: al agregar, vuelve a página 1 para ver la más reciente arriba
       activePage = 1;
     }
   };
@@ -875,26 +951,18 @@ activePage = 1;
     if(!repairsTable || !completedTable) return;
     const s = (searchInput?.value || '').toLowerCase().trim();
 
-    // ==========================
-    // ✅ ACTIVAS (más recientes primero + paginación)
-    // ==========================
     const activeList = repairs
       .filter(r => !r.delivered)
       .filter(r => {
         if(!s) return true;
         return (r.clientName||'').toLowerCase().includes(s) || (r.clientPhone||'').includes(s);
       })
-   .sort((a,b)=>{
-  const ta = Number(a.receivedAtTS || 0);
-  const tb = Number(b.receivedAtTS || 0);
-
-  // 1) Primero por timestamp (más reciente arriba)
-  if(tb !== ta) return tb - ta;
-
-  // 2) Respaldo: por push id (más reciente arriba)
-  return String(b.id).localeCompare(String(a.id));
-});
-
+      .sort((a,b)=>{
+        const ta = Number(a.receivedAtTS || 0);
+        const tb = Number(b.receivedAtTS || 0);
+        if(tb !== ta) return tb - ta;
+        return String(b.id).localeCompare(String(a.id));
+      });
 
     const activeTotalPages = Math.max(1, Math.ceil(activeList.length / PAGE_SIZE));
     activePage = clamp(activePage, 1, activeTotalPages);
@@ -916,7 +984,7 @@ activePage = 1;
       const actionsHTML = `
         <button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>
         ${r.status!=='Completado'
-          ? `<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶ Proceso</button>
+          ? `<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶️ Proceso</button>
              <button class="action-btn action-green" onclick="updateStatus('${r.id}','Completado')">✓ Completar</button>`
           : ''
         }
@@ -927,11 +995,15 @@ activePage = 1;
 
       return `
       <tr>
-        <td>${r.clientName}</td>
+        <td class="col-client">${r.clientName}</td>
         <td class="col-phone"><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
         <td class="col-model">${r.model}</td>
         <td class="col-color">${r.color||'-'}</td>
-        <td class="col-issue" title="${(r.issue||'').replace(/"/g,'&quot;')}">${r.issue}</td>
+
+        <td class="col-issue issue-cell" data-full="${escAttr(r.issue || '-')}" title="Mantén presionado / pasa el mouse para ver completo">
+          <span class="issue-short">${r.issue || '-'}</span>
+        </td>
+
         <td class="col-price">${priceText}</td>
         <td class="col-receivedAt">${receivedAt}</td>
         <td class="col-receivedBy">${r.receivedBy||'-'}</td>
@@ -941,11 +1013,9 @@ activePage = 1;
         <td class="col-actions actions-cell">
           <div class="actions-wrap">${actionsHTML}</div>
 
+          <!-- ✅ En móvil abrimos MODAL (no dropdown) -->
           <div class="actions-menu" id="actionsMenu_${r.id}">
-            <button type="button" class="actions-trigger" onclick="toggleActionsMenu('${r.id}')">⋯</button>
-            <div class="actions-dropdown">
-              ${actionsHTML}
-            </div>
+            <button type="button" class="actions-trigger" onclick="openActionsModal('${r.id}')">⋯</button>
           </div>
         </td>
       </tr>`;
@@ -959,9 +1029,6 @@ activePage = 1;
       ()=>{ activePage = clamp(activePage+1, 1, activeTotalPages); render(); }
     );
 
-    // ==========================
-    // ✅ HISTORIAL (más recientes primero + paginación)
-    // ==========================
     const completedList = repairs
       .filter(r => r.delivered || r.status === 'Completado' || r.status === 'Cancelado')
       .sort((a,b)=>{
@@ -989,21 +1056,31 @@ activePage = 1;
 
       return `
       <tr>
-        <td>${r.clientName}</td>
+        <td class="col-client">${r.clientName}</td>
         <td class="col-phone"><a href="#" class="whatsapp-link" onclick="openWhatsApp('${r.clientPhone}','${r.clientName}')">${r.clientPhone}</a></td>
         <td class="col-model">${r.model}</td>
         <td class="col-color">${r.color||'-'}</td>
-        <td class="col-issue" title="${(r.issue||'').replace(/"/g,'&quot;')}">${r.issue}</td>
+
+        <td class="col-issue issue-cell" data-full="${escAttr(r.issue || '-')}" title="Mantén presionado / pasa el mouse para ver completo">
+          <span class="issue-short">${r.issue || '-'}</span>
+        </td>
+
         <td class="col-price">${priceText}</td>
         <td class="col-receivedAt">${receivedAt}</td>
         <td class="col-receivedBy">${r.receivedBy||'-'}</td>
         <td class="col-assigned">${r.assignedTo||'-'}</td>
         <td class="col-status">${badge}</td>
+
         <td class="col-actions actions-cell">
           <div class="actions-wrap">
             <button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>
             <button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos ${partsCount?`(${partsCount})`:''}</button>
             <span class="action-btn" style="cursor:default; opacity:.85;">Entregó: ${deliveredBy}</span>
+          </div>
+
+          <!-- ✅ En móvil también abrimos MODAL -->
+          <div class="actions-menu" id="actionsMenuDone_${r.id}">
+            <button type="button" class="actions-trigger" onclick="openActionsModal('${r.id}')">⋯</button>
           </div>
         </td>
       </tr>`;
@@ -1024,13 +1101,11 @@ activePage = 1;
     repairsTable = document.getElementById('repairsTable');
     completedTable = document.getElementById('completedTable');
 
-    // ✅ pager containers
     activePager = document.getElementById('activePager');
     completedPager = document.getElementById('completedPager');
 
     populateStaffSelects();
 
-    // ✅ al buscar, vuelve a página 1 de activas
     if(searchInput) searchInput.oninput = ()=>{
       activePage = 1;
       render();
@@ -1039,19 +1114,15 @@ activePage = 1;
     const stockSearch = document.getElementById('stockSearch');
     if(stockSearch) stockSearch.addEventListener('input', refreshStockSelect);
 
-    const overlay = document.getElementById('partsModal');
-    overlay?.addEventListener('click', (e)=>{
-      if(e.target === overlay) closePartsModal();
+    const partsOverlay = document.getElementById('partsModal');
+    partsOverlay?.addEventListener('click', (e)=>{
+      if(e.target === partsOverlay) closePartsModal();
     });
 
-    document.addEventListener('click', (e)=>{
-      if(e.target.closest('.actions-trigger')) return;
-      if(e.target.closest('.actions-dropdown')) return;
-      closeAllActionMenus();
-    }, true);
-
-    window.addEventListener('scroll', ()=> closeAllActionMenus(), { passive:true });
-    window.addEventListener('resize', ()=> closeAllActionMenus(), { passive:true });
+    const actionsOverlay = document.getElementById('actionsModal');
+    actionsOverlay?.addEventListener('click', (e)=>{
+      if(e.target === actionsOverlay) closeActionsModal();
+    });
 
     render();
   });
@@ -1106,7 +1177,7 @@ activePage = 1;
         <table>
           <thead>
             <tr>
-              <th>Cliente</th>
+              <th class="col-client">Cliente</th>
               <th class="col-phone">Teléfono</th>
               <th class="col-model">Modelo</th>
               <th class="col-color">Color</th>
@@ -1123,7 +1194,6 @@ activePage = 1;
         </table>
       </div>
 
-      <!-- ✅ Pager Activas -->
       <div id="activePager"></div>
     </div>
 
@@ -1135,7 +1205,7 @@ activePage = 1;
           <table class="details-table">
             <thead>
               <tr>
-                <th>Cliente</th>
+                <th class="col-client">Cliente</th>
                 <th class="col-phone">Teléfono</th>
                 <th class="col-model">Modelo</th>
                 <th class="col-color">Color</th>
@@ -1152,7 +1222,6 @@ activePage = 1;
           </table>
         </div>
 
-        <!-- ✅ Pager Historial -->
         <div id="completedPager"></div>
       </details>
     </div>
@@ -1198,6 +1267,18 @@ activePage = 1;
       <div class="modal-actions">
         <button class="btn-ghost" type="button" onclick="closePartsModal()">Cancelar</button>
         <button type="button" onclick="confirmPartsUse()">Confirmar salida</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Modal Acciones (móvil) -->
+  <div class="modal-overlay" id="actionsModal">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="actionsTitle">Acciones</h3>
+      <div class="muted" id="actionsSub">Selecciona una acción</div>
+      <div id="actionsBody" style="display:grid; gap:10px; margin-top:12px"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" type="button" onclick="closeActionsModal()">Cerrar</button>
       </div>
     </div>
   </div>
