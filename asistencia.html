@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Control de Asistencia</title>
+
+<style>
+body{
+font-family:system-ui;
+background:#020617;
+color:#e5e7eb;
+margin:0;
+padding:25px;
+}
+
+.panel{
+background:#0f172a;
+border:1px solid #1e293b;
+border-radius:10px;
+padding:20px;
+margin-bottom:20px;
+}
+
+button{
+background:#38bdf8;
+border:none;
+padding:8px 12px;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#0ea5e9;
+}
+
+select,input{
+padding:8px;
+border-radius:6px;
+background:#020617;
+color:white;
+border:1px solid #1e293b;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #1e293b;
+}
+
+.badge{
+padding:4px 8px;
+border-radius:20px;
+font-size:12px;
+}
+
+.extra{
+background:#7c2d12;
+}
+
+.ok{
+background:#14532d;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Control de Asistencia</h2>
+
+<div class="panel">
+<h3>Empleado</h3>
+<select id="empleado"></select>
+
+<h3>Registrar evento</h3>
+<button onclick="marcar('entrada')">Entrada</button>
+<button onclick="marcar('almuerzo_salida')">Salida almuerzo</button>
+<button onclick="marcar('almuerzo_regreso')">Regreso</button>
+<button onclick="marcar('salida')">Salida</button>
+</div>
+
+<div class="panel">
+<h3>Registro del día</h3>
+<table>
+<thead>
+<tr>
+<th>Evento</th>
+<th>Hora</th>
+<th>Acción</th>
+</tr>
+</thead>
+<tbody id="tablaHoy"></tbody>
+</table>
+</div>
+
+<div class="panel">
+<h3>Semana actual (lunes → sábado)</h3>
+<table>
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Entrada</th>
+<th>Almuerzo</th>
+<th>Regreso</th>
+<th>Salida</th>
+<th>Horas</th>
+<th>Extra</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody id="tablaSemana"></tbody>
+</table>
+</div>
+
+<div class="panel">
+<h3>Historial por fecha</h3>
+<input type="date" id="fechaHistorial">
+<table>
+<thead>
+<tr>
+<th>Empleado</th>
+<th>Entrada</th>
+<th>Almuerzo</th>
+<th>Regreso</th>
+<th>Salida</th>
+<th>Horas</th>
+<th>Extra</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody id="tablaHistorial"></tbody>
+</table>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+import { getDatabase, ref, set, onValue }
+from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+
+/* Firebase */
+const firebaseConfig = {
+apiKey: "AIzaSyAiQ-NtIyWp_CaAj8jjyuDLskzVOoV_H6g",
+authDomain: "control-de-inventario-633f5.firebaseapp.com",
+databaseURL: "https://control-de-inventario-633f5-default-rtdb.firebaseio.com",
+projectId: "control-de-inventario-633f5",
+storageBucket: "control-de-inventario-633f5.firebasestorage.app",
+messagingSenderId: "1012694355492",
+appId: "1:1012694355492:web:08a9ebccbff0c6620ed2b1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* Datos */
+const empleados={
+Moises:{tipo:"medio"},
+Jamil:{tipo:"normal"},
+Katherine:{tipo:"normal"},
+Fergie:{tipo:"especial"},
+Geovany:{tipo:"normal"},
+Engel:{tipo:"normal"}
+}
+
+let registros={}
+
+const select=document.getElementById("empleado")
+
+Object.keys(empleados).forEach(e=>{
+let op=document.createElement("option")
+op.value=e
+op.textContent=e
+select.appendChild(op)
+})
+
+function hoy(){
+return new Date().toISOString().split("T")[0]
+}
+
+function horaActual(){
+return new Date().toTimeString().slice(0,5)
+}
+
+function guardarFirebase(fecha,nombre){
+set(ref(db,"asistencia/"+fecha+"/"+nombre),registros[fecha][nombre])
+}
+
+/* Eventos */
+window.marcar=function(tipo){
+const nombre=select.value
+const fecha=hoy()
+
+if(!registros[fecha]) registros[fecha]={}
+if(!registros[fecha][nombre]) registros[fecha][nombre]={}
+
+registros[fecha][nombre][tipo]=horaActual()
+
+guardarFirebase(fecha,nombre)
+}
+
+window.editar=function(tipo){
+const nombre=select.value
+const fecha=hoy()
+
+let hora=prompt("Nueva hora (HH:MM)")
+if(!hora) return
+
+let motivo=prompt("Justificación")
+
+if(!registros[fecha]) registros[fecha]={}
+if(!registros[fecha][nombre]) registros[fecha][nombre]={}
+
+registros[fecha][nombre][tipo]=hora
+registros[fecha][nombre].justificacion=motivo
+
+guardarFirebase(fecha,nombre)
+}
+
+/* Tiempo real */
+onValue(ref(db,"asistencia"),snap=>{
+registros=snap.val()||{}
+render()
+renderHistorial()
+})
+
+/* Lógica */
+function calcularHoras(r,nombre,fecha){
+
+if(!r.entrada||!r.salida) return {h:0,e:0}
+
+let entrada=new Date(`1970-01-01T${r.entrada}:00`)
+let salida=new Date(`1970-01-01T${r.salida}:00`)
+
+let almuerzo=0
+
+if(r.almuerzo_salida && r.almuerzo_regreso){
+let a1=new Date(`1970-01-01T${r.almuerzo_salida}:00`)
+let a2=new Date(`1970-01-01T${r.almuerzo_regreso}:00`)
+almuerzo=(a2-a1)/3600000
+}
+
+let horas=(salida-entrada)/3600000 - almuerzo
+
+let limite=new Date(`1970-01-01T18:00:00`)
+
+/* reglas especiales */
+if(nombre=="Fergie"){
+let dia=new Date(fecha).getDay()
+if(dia==5) limite=new Date(`1970-01-01T13:00:00`)
+}
+
+let extra=0
+if(salida>limite){
+extra=(salida-limite)/3600000
+}
+
+return{
+h:horas.toFixed(2),
+e:extra.toFixed(2)
+}
+}
+
+function obtenerSemana(){
+let hoyFecha=new Date()
+let dia=hoyFecha.getDay()
+
+let lunes=new Date(hoyFecha)
+lunes.setDate(hoyFecha.getDate()-(dia==0?6:dia-1))
+
+let dias=[]
+
+for(let i=0;i<6;i++){
+let d=new Date(lunes)
+d.setDate(lunes.getDate()+i)
+dias.push(d.toISOString().split("T")[0])
+}
+
+return dias
+}
+
+/* Render */
+function renderHoy(){
+let nombre=select.value
+let fecha=hoy()
+
+let tabla=document.getElementById("tablaHoy")
+tabla.innerHTML=""
+
+let r=registros?.[fecha]?.[nombre]||{}
+
+let eventos=[
+["entrada","Entrada"],
+["almuerzo_salida","Salida almuerzo"],
+["almuerzo_regreso","Regreso"],
+["salida","Salida"]
+]
+
+eventos.forEach(e=>{
+tabla.innerHTML+=`
+<tr>
+<td>${e[1]}</td>
+<td>${r[e[0]]||"-"}</td>
+<td><button onclick="editar('${e[0]}')">Editar</button></td>
+</tr>
+`
+})
+}
+
+function renderSemana(){
+let nombre=select.value
+let tabla=document.getElementById("tablaSemana")
+tabla.innerHTML=""
+
+let dias=obtenerSemana()
+
+dias.forEach(fecha=>{
+let r=registros?.[fecha]?.[nombre]||{}
+let calc=calcularHoras(r,nombre,fecha)
+
+tabla.innerHTML+=`
+<tr>
+<td>${fecha}</td>
+<td>${r.entrada||"-"}</td>
+<td>${r.almuerzo_salida||"-"}</td>
+<td>${r.almuerzo_regreso||"-"}</td>
+<td>${r.salida||"-"}</td>
+<td><span class="badge ok">${calc.h}</span></td>
+<td><span class="badge extra">${calc.e}</span></td>
+<td>${r.justificacion||"-"}</td>
+</tr>
+`
+})
+}
+
+function renderHistorial(){
+
+const fecha = document.getElementById("fechaHistorial").value
+const tabla = document.getElementById("tablaHistorial")
+
+if(!fecha){
+tabla.innerHTML=""
+return
+}
+
+tabla.innerHTML=""
+
+Object.keys(empleados).forEach(nombre=>{
+
+let r = registros?.[fecha]?.[nombre] || {}
+let calc = calcularHoras(r,nombre,fecha)
+
+tabla.innerHTML += `
+<tr>
+<td>${nombre}</td>
+<td>${r.entrada||"-"}</td>
+<td>${r.almuerzo_salida||"-"}</td>
+<td>${r.almuerzo_regreso||"-"}</td>
+<td>${r.salida||"-"}</td>
+<td><span class="badge ok">${calc.h}</span></td>
+<td><span class="badge extra">${calc.e}</span></td>
+<td>${r.justificacion||"-"}</td>
+</tr>
+`
+
+})
+}
+
+function render(){
+renderHoy()
+renderSemana()
+}
+
+/* Eventos UI */
+select.addEventListener("change",render)
+
+document.getElementById("fechaHistorial").addEventListener("change",renderHistorial)
+
+/* Inicial */
+document.getElementById("fechaHistorial").value = hoy()
+
+</script>
+
+</body>
+</html>
