@@ -445,25 +445,76 @@ td.issue-cell:hover::before{
   let completedPager = null;
 
   function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+function renderPager(container, page, totalPages, onPrev, onNext){
+  if(!container) return;
 
-  function renderPager(container, page, totalPages, onPrev, onNext){
-    if(!container) return;
+  let pages = [];
 
-    container.innerHTML = `
-      <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-top:12px; flex-wrap:wrap;">
-        <button type="button" class="action-btn" ${page<=1?'disabled':''} id="${container.id}_prev">← Anterior</button>
-        <div style="color:var(--muted); font-weight:800;">
-          Página <b style="color:var(--text)">${page}</b> de <b style="color:var(--text)">${totalPages}</b>
-        </div>
-        <button type="button" class="action-btn" ${page>=totalPages?'disabled':''} id="${container.id}_next">Siguiente →</button>
-      </div>
-    `;
+  if(page > 3) pages.push(1,'...');
 
-    const prev = document.getElementById(container.id + '_prev');
-    const next = document.getElementById(container.id + '_next');
-    if(prev) prev.onclick = onPrev;
-    if(next) next.onclick = onNext;
+  for(let i = page - 2; i <= page + 2; i++){
+    if(i >= 1 && i <= totalPages){
+      pages.push(i);
+    }
   }
+
+  if(page < totalPages - 2) pages.push('...', totalPages);
+
+  container.innerHTML = `
+    <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end; flex-wrap:wrap; margin-top:12px;">
+      
+      <button ${page<=1?'disabled':''} class="action-btn" id="${container.id}_prev">←</button>
+
+      ${pages.map(p=>{
+        if(p === '...'){
+          return `<span style="padding:0 6px; color:var(--muted)">...</span>`;
+        }
+
+        return `
+          <button 
+            class="action-btn ${p===page?'action-primary':''}" 
+            onclick="goToPage('${container.id}', ${p})">
+            ${p}
+          </button>
+        `;
+      }).join('')}
+
+      <button ${page>=totalPages?'disabled':''} class="action-btn" id="${container.id}_next">→</button>
+
+      <input 
+        type="number" 
+        min="1" 
+        max="${totalPages}" 
+        placeholder="Ir a..." 
+        style="width:80px"
+        onchange="jumpToPage('${container.id}', this.value)">
+    </div>
+  `;
+
+  document.getElementById(container.id + '_prev')?.addEventListener('click', onPrev);
+  document.getElementById(container.id + '_next')?.addEventListener('click', onNext);
+}
+window.goToPage = (pagerId, page)=>{
+  if(pagerId === 'activePager'){
+    activePage = page;
+  } else {
+    completedPage = page;
+  }
+  render();
+};
+window.jumpToPage = (pagerId, value)=>{
+  const page = parseInt(value);
+  if(!page) return;
+
+  if(pagerId === 'activePager'){
+    activePage = clamp(page, 1, 9999);
+  } else {
+    completedPage = clamp(page, 1, 9999);
+  }
+
+  render();
+};
+
 
   function nowLocalString(){ return new Date().toLocaleString(); }
   function startOfTodayTS(){
