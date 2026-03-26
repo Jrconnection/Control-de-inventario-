@@ -585,24 +585,24 @@ td.issue-cell:hover::before{
       refreshStockSelect();
     }
   });
+onValue(ref(db,'repairs'), snapshot=>{
+  const prevPage = activePage; // 👈 guardas la página actual
 
-  onValue(ref(db,'repairs'), snapshot=>{
-    repairs = [];
-    snapshot.forEach(child=>{
-      repairs.push({id: child.key, ...child.val()});
-    });
-
-    repairs = repairs.map(r=>({
-      ...r,
-      assignedTo: r.assignedTo || r.responsible || '',
-      receivedBy: r.receivedBy || '',
-      partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
-    }));
-
-    activePage = 1;
-    render();
+  repairs = [];
+  snapshot.forEach(child=>{
+    repairs.push({id: child.key, ...child.val()});
   });
 
+  repairs = repairs.map(r=>({
+    ...r,
+    assignedTo: r.assignedTo || r.responsible || '',
+    receivedBy: r.receivedBy || '',
+    partsUsed: Array.isArray(r.partsUsed) ? r.partsUsed : (r.partsUsed ? Object.values(r.partsUsed) : [])
+  }));
+
+  activePage = prevPage; // 👈 restauras la página
+  render();
+});
   /* CRUD */
   window.addRepair = ()=>{
     const name = document.getElementById('clientName').value.trim();
@@ -1029,8 +1029,37 @@ td.issue-cell:hover::before{
       ()=>{ activePage = clamp(activePage+1, 1, activeTotalPages); render(); }
     );
 
-    const completedList = repairs
-      .filter(r => r.delivered || r.status === 'Completado' || r.status === 'Cancelado')
+   const completedList = repairs
+  .filter(r => r.delivered || r.status === 'Completado' || r.status === 'Cancelado')
+  .filter(r => {
+
+    // 🔎 FILTRO TEXTO
+    if(historyFilters.search){
+      const text = (
+        (r.clientName||'') +
+        (r.clientPhone||'') +
+        (r.model||'')
+      ).toLowerCase();
+
+      if(!text.includes(historyFilters.search)) return false;
+    }
+
+    // 📅 FILTRO FECHA
+    const ts = r.deliveredAtTS || r.completedAtTS || r.receivedAtTS;
+    if(!ts) return false;
+
+    if(historyFilters.from){
+      const fromTS = new Date(historyFilters.from).getTime();
+      if(ts < fromTS) return false;
+    }
+
+    if(historyFilters.to){
+      const toTS = new Date(historyFilters.to).getTime() + 86400000;
+      if(ts > toTS) return false;
+    }
+
+    return true;
+  })
       .sort((a,b)=>{
         const ta = a.deliveredAtTS || a.completedAtTS || a.receivedAtTS || 0;
         const tb = b.deliveredAtTS || b.completedAtTS || b.receivedAtTS || 0;
@@ -1126,6 +1155,29 @@ td.issue-cell:hover::before{
 
     render();
   });
+  let historyFilters = {
+  from: null,
+  to: null,
+  search: ""
+};
+
+window.applyHistoryFilters = ()=>{
+  historyFilters.from = document.getElementById('historyFrom').value;
+  historyFilters.to = document.getElementById('historyTo').value;
+  historyFilters.search = document.getElementById('historySearch').value.toLowerCase();
+  completedPage = 1;
+  render();
+};
+
+window.clearHistoryFilters = ()=>{
+  historyFilters = { from:null, to:null, search:"" };
+
+  document.getElementById('historyFrom').value = "";
+  document.getElementById('historyTo').value = "";
+  document.getElementById('historySearch').value = "";
+
+  render();
+};
 </script>
 
 </head>
@@ -1200,7 +1252,17 @@ td.issue-cell:hover::before{
     <div class="panel">
       <details>
         <summary>📦 Ver historial de reparaciones completadas</summary>
+<div style="margin:12px 0; display:flex; gap:10px; flex-wrap:wrap;">
 
+  <input type="date" id="historyFrom">
+  <input type="date" id="historyTo">
+
+  <input id="historySearch" placeholder="Buscar cliente, teléfono, modelo...">
+
+  <button onclick="applyHistoryFilters()">Filtrar</button>
+  <button onclick="clearHistoryFilters()">Limpiar</button>
+
+</div>
         <div class="table-wrap">
           <table class="details-table">
             <thead>
