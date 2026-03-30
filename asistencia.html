@@ -118,6 +118,26 @@ background:#14532d;
 </div>
 
 <div class="panel">
+<h3>Resumen semanal (Horas extra)</h3>
+
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+<button onclick="cambiarSemana(-1)">←</button>
+<button onclick="cambiarSemana(1)">→</button>
+<span id="labelSemana"></span>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Empleado</th>
+<th>Total horas extra</th>
+</tr>
+</thead>
+<tbody id="tablaResumen"></tbody>
+</table>
+</div>
+
+<div class="panel">
 <h3>Historial por fecha</h3>
 <input type="date" id="fechaHistorial">
 <table>
@@ -168,6 +188,7 @@ Engel:{tipo:"normal"}
 }
 
 let registros={}
+let offsetSemana = 0
 
 const select=document.getElementById("empleado")
 
@@ -178,28 +199,20 @@ op.textContent=e
 select.appendChild(op)
 })
 
-/* ✅ FECHA LOCAL (CORREGIDO) */
 function hoy(){
 const d = new Date()
-const year = d.getFullYear()
-const month = String(d.getMonth()+1).padStart(2,'0')
-const day = String(d.getDate()).padStart(2,'0')
-return `${year}-${month}-${day}`
+return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 }
 
-/* ✅ HORA LOCAL */
 function horaActual(){
 const d = new Date()
-const h = String(d.getHours()).padStart(2,'0')
-const m = String(d.getMinutes()).padStart(2,'0')
-return `${h}:${m}`
+return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
 }
 
 function guardarFirebase(fecha,nombre){
 set(ref(db,"asistencia/"+fecha+"/"+nombre),registros[fecha][nombre])
 }
 
-/* Eventos */
 window.marcar=function(tipo){
 const nombre=select.value
 const fecha=hoy()
@@ -208,7 +221,6 @@ if(!registros[fecha]) registros[fecha]={}
 if(!registros[fecha][nombre]) registros[fecha][nombre]={}
 
 registros[fecha][nombre][tipo]=horaActual()
-
 guardarFirebase(fecha,nombre)
 }
 
@@ -230,23 +242,19 @@ registros[fecha][nombre].justificacion=motivo
 guardarFirebase(fecha,nombre)
 }
 
-/* Tiempo real */
 onValue(ref(db,"asistencia"),snap=>{
 registros=snap.val()||{}
 render()
 renderHistorial()
 })
 
-/* Lógica */
 function calcularHoras(r,nombre,fecha){
-
 if(!r.entrada||!r.salida) return {h:0,e:0}
 
 let entrada=new Date(`1970-01-01T${r.entrada}:00`)
 let salida=new Date(`1970-01-01T${r.salida}:00`)
 
 let almuerzo=0
-
 if(r.almuerzo_salida && r.almuerzo_regreso){
 let a1=new Date(`1970-01-01T${r.almuerzo_salida}:00`)
 let a2=new Date(`1970-01-01T${r.almuerzo_regreso}:00`)
@@ -256,8 +264,6 @@ almuerzo=(a2-a1)/3600000
 let horas=(salida-entrada)/3600000 - almuerzo
 
 let limite=new Date(`1970-01-01T18:00:00`)
-
-/* regla especial */
 if(nombre=="Fergie"){
 let dia=new Date(fecha).getDay()
 if(dia==5) limite=new Date(`1970-01-01T13:00:00`)
@@ -274,15 +280,18 @@ e:extra.toFixed(2)
 }
 }
 
+/* 🔥 MODIFICADA */
 function obtenerSemana(){
-let hoyFecha=new Date()
-let dia=hoyFecha.getDay()
 
-let lunes=new Date(hoyFecha)
-lunes.setDate(hoyFecha.getDate()-(dia==0?6:dia-1))
+let base = new Date()
+base.setDate(base.getDate() + (offsetSemana * 7))
+
+let dia = base.getDay()
+
+let lunes = new Date(base)
+lunes.setDate(base.getDate()-(dia==0?6:dia-1))
 
 let dias=[]
-
 for(let i=0;i<6;i++){
 let d=new Date(lunes)
 d.setDate(lunes.getDate()+i)
@@ -292,11 +301,22 @@ dias.push(d.toISOString().split("T")[0])
 return dias
 }
 
-/* Render */
+function calcularExtrasSemana(nombre){
+let dias = obtenerSemana()
+let total = 0
+
+dias.forEach(fecha=>{
+let r = registros?.[fecha]?.[nombre] || {}
+let calc = calcularHoras(r,nombre,fecha)
+total += parseFloat(calc.e || 0)
+})
+
+return total.toFixed(2)
+}
+
 function renderHoy(){
 let nombre=select.value
 let fecha=hoy()
-
 let tabla=document.getElementById("tablaHoy")
 tabla.innerHTML=""
 
@@ -346,8 +366,35 @@ tabla.innerHTML+=`
 })
 }
 
-function renderHistorial(){
+function renderResumen(){
+let tabla = document.getElementById("tablaResumen")
+tabla.innerHTML = ""
 
+Object.keys(empleados).forEach(nombre=>{
+let total = calcularExtrasSemana(nombre)
+
+tabla.innerHTML += `
+<tr>
+<td>${nombre}</td>
+<td><span class="badge extra">${total}</span></td>
+</tr>
+`
+})
+}
+
+function actualizarLabelSemana(){
+let dias = obtenerSemana()
+document.getElementById("labelSemana").textContent =
+`Semana: ${dias[0]} → ${dias[dias.length-1]}`
+}
+
+window.cambiarSemana = function(dir){
+offsetSemana += dir
+render()
+actualizarLabelSemana()
+}
+
+function renderHistorial(){
 const fecha = document.getElementById("fechaHistorial").value
 const tabla = document.getElementById("tablaHistorial")
 
@@ -359,7 +406,6 @@ return
 tabla.innerHTML=""
 
 Object.keys(empleados).forEach(nombre=>{
-
 let r = registros?.[fecha]?.[nombre] || {}
 let calc = calcularHoras(r,nombre,fecha)
 
@@ -375,21 +421,22 @@ tabla.innerHTML += `
 <td>${r.justificacion||"-"}</td>
 </tr>
 `
-
 })
 }
 
 function render(){
 renderHoy()
 renderSemana()
+renderResumen()
+actualizarLabelSemana()
 }
 
-/* Eventos UI */
 select.addEventListener("change",render)
 document.getElementById("fechaHistorial").addEventListener("change",renderHistorial)
 
-/* Inicial */
 document.getElementById("fechaHistorial").value = hoy()
+
+actualizarLabelSemana()
 
 </script>
 
