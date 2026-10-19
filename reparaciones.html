@@ -4,7 +4,142 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reparaciones | JR Connection</title>
-<style>\n:root{\n  --bg:#f4f7fb;\n  --surface:#ffffff;\n  --surface-2:#f8fafc;\n  --sidebar:#0f172a;\n  --sidebar-2:#111c34;\n  --border:#e2e8f0;\n  --text:#172033;\n  --muted:#64748b;\n  --primary:#2563eb;\n  --primary-hover:#1d4ed8;\n  --green:#16a34a;\n  --yellow:#d97706;\n  --red:#dc2626;\n  --blue:#2563eb;\n  --shadow:0 10px 30px rgba(15,23,42,.07);\n}\n*{box-sizing:border-box}\nhtml{scroll-behavior:smooth}\nbody{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100dvh}\nbutton,input,select{font:inherit}\nbutton{cursor:pointer}\n\n/* Sidebar */\naside{width:248px;flex:0 0 248px;background:linear-gradient(180deg,var(--sidebar),#0b1222);color:#fff;padding:22px 16px;position:sticky;top:0;height:100dvh;border-right:1px solid rgba(255,255,255,.06)}\n.brand{display:flex;align-items:center;gap:12px;padding:4px 10px 26px}\n.brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#60a5fa);display:grid;place-items:center;font-size:20px;box-shadow:0 8px 20px rgba(37,99,235,.28)}\n.brand-text strong{display:block;font-size:15px;letter-spacing:.1px}\n.brand-text span{display:block;color:#94a3b8;font-size:11px;margin-top:3px}\nnav{display:grid;gap:6px}\nnav a{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:11px;color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:650;transition:.18s ease}\nnav a:hover{background:rgba(255,255,255,.06);color:#fff}\nnav a.active{background:rgba(37,99,235,.18);color:#fff;box-shadow:inset 3px 0 0 #60a5fa}\n.sidebar-label{color:#64748b;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:22px 13px 8px}\n\n/* Main */\nmain{flex:1;min-width:0;padding:28px clamp(16px,3vw,36px);overflow:auto}\n.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}\n.page-head h1{margin:0;font-size:26px;line-height:1.15;letter-spacing:-.025em}\n.page-head p{margin:7px 0 0;color:var(--muted);font-size:13px}\n.head-actions{display:flex;gap:10px;align-items:center}\n.eyebrow{font-size:11px;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}\n\n/* KPI cards */\n.stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}\n.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}\n.stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px}\n.stat-label{font-size:12px;color:var(--muted);font-weight:700}\n.stat-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#eff6ff;color:var(--primary);font-size:16px}\n.stat-value{font-size:25px;font-weight:850;letter-spacing:-.03em;margin-top:9px}\n.stat-hint{font-size:11px;color:var(--muted);margin-top:3px}\n\n/* Cards */\n.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}\n.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}\n.panel-title{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}\n.panel-subtitle{margin:5px 0 0;color:var(--muted);font-size:12px}\n\n/* Form */\n.form-section{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}\n.form-group{min-width:0}\n.form-group.full{grid-column:1/-1}\n.form-group label{display:block;font-size:11px;font-weight:800;color:#475569;margin:0 0 7px;text-transform:uppercase;letter-spacing:.045em}\n.form-control{width:100%;height:44px;padding:0 13px;border:1px solid var(--border);background:#fff;color:var(--text);border-radius:11px;outline:none;transition:.18s ease}\ntextarea.form-control{height:auto;min-height:90px;padding:12px;resize:vertical}\n.form-control:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}\n.price-group{display:grid;grid-template-columns:120px 1fr;gap:10px}\n.form-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:2px;padding-top:5px}\n.btn{height:42px;border:1px solid transparent;border-radius:10px;padding:0 15px;font-weight:800;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.18s ease}\n.btn-primary{background:var(--primary);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.16)}\n.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}\n.btn-secondary{background:#fff;color:#475569;border-color:var(--border)}\n.btn-secondary:hover{background:#f8fafc}\n.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}\n\n/* Search */\n.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}\n.search-wrap{position:relative;flex:1;min-width:220px;max-width:420px}\n.search-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px}\n.search-wrap input{width:100%;height:42px;padding:0 13px 0 38px;border:1px solid var(--border);border-radius:11px;background:#fff;outline:none}\n.search-wrap input:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}\n.result-count{font-size:12px;color:var(--muted)}\n\n/* Table */\n.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:13px;-webkit-overflow-scrolling:touch}\ntable{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:1120px;background:#fff}\nthead th{position:sticky;top:0;z-index:2;background:#f8fafc;color:#64748b;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.055em;font-weight:850}\nth,td{padding:13px 12px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}\ntbody tr:last-child td{border-bottom:none}\ntbody tr:hover td{background:#fbfdff}\nth.col-client,td.col-client{width:160px;font-weight:750}\nth.col-phone,td.col-phone{width:130px}\nth.col-model,td.col-model{width:135px}\nth.col-color,td.col-color{width:95px}\nth.col-issue,td.col-issue{width:230px}\nth.col-price,td.col-price{width:100px}\nth.col-receivedAt,td.col-receivedAt{width:145px}\nth.col-receivedBy,td.col-receivedBy{width:110px}\nth.col-assigned,td.col-assigned{width:110px}\nth.col-status,td.col-status{width:110px}\nth.col-actions,td.col-actions{width:280px}\n.whatsapp-link{color:#15803d;text-decoration:none;font-weight:750}.whatsapp-link:hover{text-decoration:underline}\n\n/* Status */\n.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap}\n.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}\n.pending{background:#fff7ed;color:#c2410c}.inprogress{background:#eff6ff;color:#2563eb}.completed{background:#f0fdf4;color:#15803d}.cancelled{background:#fef2f2;color:#dc2626}\n\n/* Actions */\n.actions-cell{white-space:normal}.actions-wrap{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.action-btn{height:30px!important;padding:0 9px!important;border-radius:8px!important;font-size:10px!important;font-weight:800!important;border:1px solid var(--border)!important;background:#fff!important;color:#475569!important;box-shadow:none!important}.action-btn:hover{background:#f8fafc!important;border-color:#cbd5e1!important}.action-primary{color:#1d4ed8!important;background:#eff6ff!important;border-color:#dbeafe!important}.action-green{color:#15803d!important;background:#f0fdf4!important;border-color:#dcfce7!important}.action-red{color:#b91c1c!important;background:#fef2f2!important;border-color:#fee2e2!important}.action-yellow{color:#b45309!important;background:#fffbeb!important;border-color:#fef3c7!important}\n.actions-menu{position:relative;display:none}.actions-trigger{width:38px;height:36px;border-radius:9px;border:1px solid var(--border);background:#fff;color:#475569;font-size:18px;display:grid;place-items:center;padding:0}\n\n/* History */\ndetails summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:#334155}details summary::-webkit-details-marker{display:none}details summary::before{content:'›';font-size:20px;line-height:0;transition:.15s}details[open] summary::before{transform:rotate(90deg)}\n.history-filters{display:grid;grid-template-columns:150px 150px minmax(200px,1fr) auto auto;gap:9px;margin:16px 0}\n.history-filters input{height:40px;border:1px solid var(--border);border-radius:10px;padding:0 11px;background:#fff;color:var(--text);outline:none}\n\n/* Modal */\n.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}\n.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 25px 70px rgba(15,23,42,.2)}\n.modal h3{margin:0 0 5px;font-size:17px}.modal .muted{color:var(--muted);font-size:12px;margin-bottom:16px;line-height:1.5}.modal-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:12px;align-items:end}.modal-grid>div:nth-child(2){grid-column:1/-1}.modal-grid label{font-size:11px;color:#475569;font-weight:800;text-transform:uppercase;display:block;margin-bottom:6px}.modal-grid input,.modal-grid select{width:100%;height:42px;border:1px solid var(--border);border-radius:10px;padding:0 11px;background:#fff;color:var(--text);outline:none}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid #edf1f5}.btn-ghost{background:#fff!important;color:#475569!important;border:1px solid var(--border)!important}\n.pills-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pill{display:flex;gap:10px;align-items:center;width:100%;border:1px solid var(--border);background:#f8fafc;padding:10px 11px;border-radius:11px}.pill b{font-weight:800}.pill .x{cursor:pointer;border:1px solid var(--border);border-radius:8px;padding:3px 8px;background:#fff;color:#64748b;margin-left:auto}.pill .x:hover{color:var(--red)}\n.modal-action-btn{width:100%;text-align:left;padding:12px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:#334155;font-weight:800;cursor:pointer}.modal-action-btn:hover{background:#eff6ff;border-color:#bfdbfe}\n\n/* Tooltip */\ntd.issue-cell{position:relative;overflow:visible!important;cursor:help}td.issue-cell .issue-short{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}td.issue-cell:hover::after{content:attr(data-full);position:absolute;left:0;top:calc(100% + 8px);width:max-content;max-width:min(520px,calc(100vw - 30px));background:#0f172a;border-radius:10px;padding:9px 11px;box-shadow:0 14px 30px rgba(15,23,42,.2);color:#fff;font-size:12px;line-height:1.4;white-space:pre-wrap;word-break:break-word;z-index:999999}\n\n/* Pager */\n#activePager>div,#completedPager>div{justify-content:flex-end!important}.action-btn[id$="_prev"],.action-btn[id$="_next"]{min-width:34px}\n\n@media(max-width:1150px){.stats-grid{grid-template-columns:repeat(3,1fr)}.history-filters{grid-template-columns:1fr 1fr 1fr auto auto}}\n@media(max-width:900px){body{flex-direction:column}aside{width:100%;height:auto;position:relative;flex-basis:auto;padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.07)}.brand{padding:2px 5px 12px}.sidebar-label{display:none}nav{display:flex;overflow-x:auto;gap:6px}nav a{white-space:nowrap;padding:10px 11px}main{padding:18px 14px}.page-head{margin-bottom:18px}.stats-grid{grid-template-columns:repeat(2,1fr)}.form-section{grid-template-columns:1fr}.form-group.full,.form-actions{grid-column:1}.history-filters{grid-template-columns:1fr 1fr}.history-filters input{min-width:0}.history-filters button{width:100%}.actions-wrap{display:none!important}.actions-menu{display:inline-block!important}}\n@media(max-width:600px){.page-head{display:block}.head-actions{margin-top:12px}.stats-grid{grid-template-columns:1fr 1fr;gap:10px}.stat-card{padding:13px}.stat-value{font-size:22px}.panel{padding:15px;border-radius:15px}.panel-head{display:block}.toolbar{display:block}.search-wrap{max-width:none;margin-bottom:8px}.result-count{display:block}.price-group{grid-template-columns:95px 1fr}.history-filters{grid-template-columns:1fr}.history-filters input,.history-filters button{width:100%}table{min-width:0!important;table-layout:auto!important}th.col-client,td.col-client{min-width:145px;width:auto!important}th.col-issue,td.col-issue{min-width:190px;width:auto!important}th.col-receivedAt,td.col-receivedAt,th.col-receivedBy,td.col-receivedBy,th.col-assigned,td.col-assigned,th.col-price,td.col-price,th.col-color,td.col-color{display:none}th.col-actions,td.col-actions{width:70px!important}.modal{padding:17px}.modal-grid{grid-template-columns:1fr}.modal-grid>div:nth-child(2){grid-column:auto}}\n@media(max-width:420px){.stats-grid{grid-template-columns:1fr 1fr}th.col-status,td.col-status{display:none}.page-head h1{font-size:23px}}\n
+<style>
+:root{
+  --bg:#f4f7fb;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --sidebar:#0f172a;
+  --sidebar-2:#111c34;
+  --border:#e2e8f0;
+  --text:#172033;
+  --muted:#64748b;
+  --primary:#2563eb;
+  --primary-hover:#1d4ed8;
+  --green:#16a34a;
+  --yellow:#d97706;
+  --red:#dc2626;
+  --blue:#2563eb;
+  --shadow:0 10px 30px rgba(15,23,42,.07);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100dvh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+
+/* Sidebar */
+aside{width:248px;flex:0 0 248px;background:linear-gradient(180deg,var(--sidebar),#0b1222);color:#fff;padding:22px 16px;position:sticky;top:0;height:100dvh;border-right:1px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 10px 26px}
+.brand-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#60a5fa);display:grid;place-items:center;font-size:20px;box-shadow:0 8px 20px rgba(37,99,235,.28)}
+.brand-text strong{display:block;font-size:15px;letter-spacing:.1px}
+.brand-text span{display:block;color:#94a3b8;font-size:11px;margin-top:3px}
+nav{display:grid;gap:6px}
+nav a{display:flex;align-items:center;gap:11px;padding:12px 13px;border-radius:11px;color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:650;transition:.18s ease}
+nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+nav a.active{background:rgba(37,99,235,.18);color:#fff;box-shadow:inset 3px 0 0 #60a5fa}
+.sidebar-label{color:#64748b;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:22px 13px 8px}
+
+/* Main */
+main{flex:1;min-width:0;padding:28px clamp(16px,3vw,36px);overflow:auto}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+.page-head h1{margin:0;font-size:26px;line-height:1.15;letter-spacing:-.025em}
+.page-head p{margin:7px 0 0;color:var(--muted);font-size:13px}
+.head-actions{display:flex;gap:10px;align-items:center}
+.eyebrow{font-size:11px;color:var(--primary);font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+
+/* KPI cards */
+.stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stat-label{font-size:12px;color:var(--muted);font-weight:700}
+.stat-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#eff6ff;color:var(--primary);font-size:16px}
+.stat-value{font-size:25px;font-weight:850;letter-spacing:-.03em;margin-top:9px}
+.stat-hint{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* Cards */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.panel-title{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em}
+.panel-subtitle{margin:5px 0 0;color:var(--muted);font-size:12px}
+
+/* Form */
+.form-section{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.form-group{min-width:0}
+.form-group.full{grid-column:1/-1}
+.form-group label{display:block;font-size:11px;font-weight:800;color:#475569;margin:0 0 7px;text-transform:uppercase;letter-spacing:.045em}
+.form-control{width:100%;height:44px;padding:0 13px;border:1px solid var(--border);background:#fff;color:var(--text);border-radius:11px;outline:none;transition:.18s ease}
+textarea.form-control{height:auto;min-height:90px;padding:12px;resize:vertical}
+.form-control:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+.price-group{display:grid;grid-template-columns:120px 1fr;gap:10px}
+.form-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:2px;padding-top:5px}
+.btn{height:42px;border:1px solid transparent;border-radius:10px;padding:0 15px;font-weight:800;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.18s ease}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.16)}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.btn-secondary{background:#fff;color:#475569;border-color:var(--border)}
+.btn-secondary:hover{background:#f8fafc}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Search */
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:420px}
+.search-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:15px}
+.search-wrap input{width:100%;height:42px;padding:0 13px 0 38px;border:1px solid var(--border);border-radius:11px;background:#fff;outline:none}
+.search-wrap input:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+.result-count{font-size:12px;color:var(--muted)}
+
+/* Table */
+.table-wrap{width:100%;overflow-x:auto;border:1px solid var(--border);border-radius:13px;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;min-width:1120px;background:#fff}
+thead th{position:sticky;top:0;z-index:2;background:#f8fafc;color:#64748b;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.055em;font-weight:850}
+th,td{padding:13px 12px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fbfdff}
+th.col-client,td.col-client{width:160px;font-weight:750}
+th.col-phone,td.col-phone{width:130px}
+th.col-model,td.col-model{width:135px}
+th.col-color,td.col-color{width:95px}
+th.col-issue,td.col-issue{width:230px}
+th.col-price,td.col-price{width:100px}
+th.col-receivedAt,td.col-receivedAt{width:145px}
+th.col-receivedBy,td.col-receivedBy{width:110px}
+th.col-assigned,td.col-assigned{width:110px}
+th.col-status,td.col-status{width:110px}
+th.col-actions,td.col-actions{width:280px}
+.whatsapp-link{color:#15803d;text-decoration:none;font-weight:750}.whatsapp-link:hover{text-decoration:underline}
+
+/* Status */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pending{background:#fff7ed;color:#c2410c}.inprogress{background:#eff6ff;color:#2563eb}.completed{background:#f0fdf4;color:#15803d}.cancelled{background:#fef2f2;color:#dc2626}
+
+/* Actions */
+.actions-cell{white-space:normal}.actions-wrap{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.action-btn{height:30px!important;padding:0 9px!important;border-radius:8px!important;font-size:10px!important;font-weight:800!important;border:1px solid var(--border)!important;background:#fff!important;color:#475569!important;box-shadow:none!important}.action-btn:hover{background:#f8fafc!important;border-color:#cbd5e1!important}.action-primary{color:#1d4ed8!important;background:#eff6ff!important;border-color:#dbeafe!important}.action-green{color:#15803d!important;background:#f0fdf4!important;border-color:#dcfce7!important}.action-red{color:#b91c1c!important;background:#fef2f2!important;border-color:#fee2e2!important}.action-yellow{color:#b45309!important;background:#fffbeb!important;border-color:#fef3c7!important}
+.actions-menu{position:relative;display:none}.actions-trigger{width:38px;height:36px;border-radius:9px;border:1px solid var(--border);background:#fff;color:#475569;font-size:18px;display:grid;place-items:center;padding:0}
+
+/* History */
+details summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:#334155}details summary::-webkit-details-marker{display:none}details summary::before{content:'›';font-size:20px;line-height:0;transition:.15s}details[open] summary::before{transform:rotate(90deg)}
+.history-filters{display:grid;grid-template-columns:150px 150px minmax(200px,1fr) auto auto;gap:9px;margin:16px 0}
+.history-filters input{height:40px;border:1px solid var(--border);border-radius:10px;padding:0 11px;background:#fff;color:var(--text);outline:none}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px}
+.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 25px 70px rgba(15,23,42,.2)}
+.modal h3{margin:0 0 5px;font-size:17px}.modal .muted{color:var(--muted);font-size:12px;margin-bottom:16px;line-height:1.5}.modal-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:12px;align-items:end}.modal-grid>div:nth-child(2){grid-column:1/-1}.modal-grid label{font-size:11px;color:#475569;font-weight:800;text-transform:uppercase;display:block;margin-bottom:6px}.modal-grid input,.modal-grid select{width:100%;height:42px;border:1px solid var(--border);border-radius:10px;padding:0 11px;background:#fff;color:var(--text);outline:none}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;padding-top:14px;border-top:1px solid #edf1f5}.btn-ghost{background:#fff!important;color:#475569!important;border:1px solid var(--border)!important}
+.pills-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pill{display:flex;gap:10px;align-items:center;width:100%;border:1px solid var(--border);background:#f8fafc;padding:10px 11px;border-radius:11px}.pill b{font-weight:800}.pill .x{cursor:pointer;border:1px solid var(--border);border-radius:8px;padding:3px 8px;background:#fff;color:#64748b;margin-left:auto}.pill .x:hover{color:var(--red)}
+.modal-action-btn{width:100%;text-align:left;padding:12px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:#334155;font-weight:800;cursor:pointer}.modal-action-btn:hover{background:#eff6ff;border-color:#bfdbfe}
+
+/* Tooltip */
+td.issue-cell{position:relative;overflow:visible!important;cursor:help}td.issue-cell .issue-short{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}td.issue-cell:hover::after{content:attr(data-full);position:absolute;left:0;top:calc(100% + 8px);width:max-content;max-width:min(520px,calc(100vw - 30px));background:#0f172a;border-radius:10px;padding:9px 11px;box-shadow:0 14px 30px rgba(15,23,42,.2);color:#fff;font-size:12px;line-height:1.4;white-space:pre-wrap;word-break:break-word;z-index:999999}
+
+/* Pager */
+#activePager>div,#completedPager>div{justify-content:flex-end!important}.action-btn[id$="_prev"],.action-btn[id$="_next"]{min-width:34px}
+
+@media(max-width:1150px){.stats-grid{grid-template-columns:repeat(3,1fr)}.history-filters{grid-template-columns:1fr 1fr 1fr auto auto}}
+@media(max-width:900px){body{flex-direction:column}aside{width:100%;height:auto;position:relative;flex-basis:auto;padding:12px 14px;border-right:0;border-bottom:1px solid rgba(255,255,255,.07)}.brand{padding:2px 5px 12px}.sidebar-label{display:none}nav{display:flex;overflow-x:auto;gap:6px}nav a{white-space:nowrap;padding:10px 11px}main{padding:18px 14px}.page-head{margin-bottom:18px}.stats-grid{grid-template-columns:repeat(2,1fr)}.form-section{grid-template-columns:1fr}.form-group.full,.form-actions{grid-column:1}.history-filters{grid-template-columns:1fr 1fr}.history-filters input{min-width:0}.history-filters button{width:100%}.actions-wrap{display:none!important}.actions-menu{display:inline-block!important}}
+@media(max-width:600px){.page-head{display:block}.head-actions{margin-top:12px}.stats-grid{grid-template-columns:1fr 1fr;gap:10px}.stat-card{padding:13px}.stat-value{font-size:22px}.panel{padding:15px;border-radius:15px}.panel-head{display:block}.toolbar{display:block}.search-wrap{max-width:none;margin-bottom:8px}.result-count{display:block}.price-group{grid-template-columns:95px 1fr}.history-filters{grid-template-columns:1fr}.history-filters input,.history-filters button{width:100%}table{min-width:0!important;table-layout:auto!important}th.col-client,td.col-client{min-width:145px;width:auto!important}th.col-issue,td.col-issue{min-width:190px;width:auto!important}th.col-receivedAt,td.col-receivedAt,th.col-receivedBy,td.col-receivedBy,th.col-assigned,td.col-assigned,th.col-price,td.col-price,th.col-color,td.col-color{display:none}th.col-actions,td.col-actions{width:70px!important}.modal{padding:17px}.modal-grid{grid-template-columns:1fr}.modal-grid>div:nth-child(2){grid-column:auto}}
+@media(max-width:420px){.stats-grid{grid-template-columns:1fr 1fr}th.col-status,td.col-status{display:none}.page-head h1{font-size:23px}}
+
 </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
@@ -849,6 +984,108 @@ window.clearHistoryFilters = ()=>{
 
 </script>
 </head>
-<body>\n<aside>\n  <div class="brand">\n    <div class="brand-icon">🔧</div>\n    <div class="brand-text"><strong>JR Connection</strong><span>Sistema técnico</span></div>\n  </div>\n  <div class="sidebar-label">Navegación</div>\n  <nav>\n    <a href="index.html">🏠 <span>Dashboard</span></a>\n    <a href="inventario.html">📦 <span>Inventario</span></a>\n    <a href="reparaciones.html" class="active">🔧 <span>Reparaciones</span></a>\n    <a href="proceso.html">⚡ <span>Proceso / TV</span></a>\n  </nav>\n</aside>\n\n<main>\n  <div class="page-head">\n    <div>\n      <div class="eyebrow">Gestión técnica</div>\n      <h1>Reparaciones</h1>\n      <p>Registra, asigna y controla el estado de cada equipo.</p>\n    </div>\n    <div class="head-actions"><span class="result-count">Panel operativo</span></div>\n  </div>\n\n  <section class="stats-grid">\n    <div class="stat-card"><div class="stat-top"><span class="stat-label">Activas</span><span class="stat-icon">🔧</span></div><div class="stat-value" id="statActive">0</div><div class="stat-hint">Equipos aún no entregados</div></div>\n    <div class="stat-card"><div class="stat-top"><span class="stat-label">Pendientes</span><span class="stat-icon">⏳</span></div><div class="stat-value" id="statPending">0</div><div class="stat-hint">Esperando diagnóstico o inicio</div></div>\n    <div class="stat-card"><div class="stat-top"><span class="stat-label">En proceso</span><span class="stat-icon">⚙️</span></div><div class="stat-value" id="statProgress">0</div><div class="stat-hint">Trabajos actualmente activos</div></div>\n    <div class="stat-card"><div class="stat-top"><span class="stat-label">Completadas</span><span class="stat-icon">✓</span></div><div class="stat-value" id="statCompleted">0</div><div class="stat-hint">Reparaciones terminadas</div></div>\n    <div class="stat-card"><div class="stat-top"><span class="stat-label">Canceladas</span><span class="stat-icon">✕</span></div><div class="stat-value" id="statCancelled">0</div><div class="stat-hint">Entregadas sin reparar</div></div>\n  </section>\n\n  <section class="panel">\n    <div class="panel-head">\n      <div><h2 class="panel-title">Nueva reparación</h2><p class="panel-subtitle">Completa los datos del cliente, equipo y responsable.</p></div>\n    </div>\n    <form id="repairForm" onsubmit="event.preventDefault(); addRepair();">\n      <div class="form-section">\n        <div class="form-group"><label for="clientName">Cliente</label><input class="form-control" id="clientName" placeholder="Nombre completo"></div>\n        <div class="form-group"><label for="clientPhone">Teléfono</label><input class="form-control" id="clientPhone" placeholder="Número de contacto"></div>\n        <div class="form-group"><label for="deviceModel">Dispositivo</label><input class="form-control" id="deviceModel" placeholder="Ej. iPhone 13, A55 5G..."></div>\n        <div class="form-group"><label for="deviceColor">Color</label><input class="form-control" id="deviceColor" placeholder="Color del equipo (opcional)"></div>\n        <div class="form-group full"><label for="issue">Problema / reparación solicitada</label><input class="form-control" id="issue" placeholder="Describe la falla o trabajo a realizar"></div>\n        <div class="form-group"><label>Precio</label><div class="price-group"><select class="form-control" id="currency"><option value="C$">C$</option><option value="$">$</option></select><input class="form-control" id="price" placeholder="Monto"></div></div>\n        <div class="form-group"><label for="receivedBy">Recibió</label><select class="form-control" id="receivedBy"><option value="">-- Seleccionar --</option></select></div>\n        <div class="form-group"><label for="assignedTo">Técnico asignado</label><select class="form-control" id="assignedTo"><option value="">-- Seleccionar --</option></select></div>\n        <div class="form-actions"><button class="btn btn-secondary" id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none">Cancelar</button><button class="btn btn-primary" id="submitRepair" type="submit">＋ Agregar reparación</button></div>\n      </div>\n    </form>\n  </section>\n\n  <section class="panel">\n    <div class="panel-head">\n      <div><h2 class="panel-title">Reparaciones activas</h2><p class="panel-subtitle">Consulta rápidamente clientes, equipos, responsables y estados.</p></div>\n    </div>\n    <div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="search" placeholder="Buscar por cliente o teléfono..."></div><span class="result-count">Actualización en tiempo real</span></div>\n    <div class="table-wrap"><table><thead><tr><th class="col-client">Cliente</th><th class="col-phone">Teléfono</th><th class="col-model">Modelo</th><th class="col-color">Color</th><th class="col-issue">Problema</th><th class="col-price">Precio</th><th class="col-receivedAt">Recibido</th><th class="col-receivedBy">Recibió</th><th class="col-assigned">Asignado</th><th class="col-status">Estado</th><th class="col-actions">Acciones</th></tr></thead><tbody id="repairsTable"></tbody></table></div>\n    <div id="activePager"></div>\n  </section>\n\n  <section class="panel">\n    <details>\n      <summary>Historial de reparaciones completadas</summary>\n      <div class="history-filters">\n        <input type="date" id="historyFrom" title="Desde">\n        <input type="date" id="historyTo" title="Hasta">\n        <input id="historySearch" placeholder="Buscar cliente, teléfono o modelo...">\n        <button class="btn btn-primary" onclick="applyHistoryFilters()">Filtrar</button>\n        <button class="btn btn-secondary" onclick="clearHistoryFilters()">Limpiar</button>\n      </div>\n      <div class="table-wrap"><table class="details-table"><thead><tr><th class="col-client">Cliente</th><th class="col-phone">Teléfono</th><th class="col-model">Modelo</th><th class="col-color">Color</th><th class="col-issue">Problema</th><th class="col-price">Precio</th><th class="col-receivedAt">Recibido</th><th class="col-receivedBy">Recibió</th><th class="col-assigned">Asignado</th><th class="col-status">Estado</th><th class="col-actions">Acciones</th></tr></thead><tbody id="completedTable"></tbody></table></div>\n      <div id="completedPager"></div>\n    </details>\n  </section>\n</main>\n\n<!-- Modal de repuestos -->\n<div class="modal-overlay" id="partsModal">\n  <div class="modal" role="dialog" aria-modal="true">\n    <h3 id="partsTitle">Usar repuestos</h3>\n    <div class="muted">Busca el repuesto, selecciona cantidad y confirma la salida. El stock se descuenta automáticamente.</div>\n    <div class="modal-grid">\n      <div><label>Buscar repuesto</label><input id="stockSearch" placeholder="Ej. iPhone 11, batería, OLED..."></div>\n      <div><label>Item del inventario</label><select id="stockSelect"></select></div>\n      <div><label>Cantidad</label><input id="partQty" type="number" min="1" placeholder="Ej. 1"></div>\n      <div><button class="btn btn-primary" type="button" onclick="addPartLine()">＋ Agregar item</button></div>\n    </div>\n    <div style="margin-top:14px"><label style="font-size:11px;color:#475569;font-weight:800;text-transform:uppercase;display:block;margin-bottom:6px">Autorizó</label><select class="form-control" id="authSelect"></select></div>\n    <div id="selectedParts" style="margin-top:12px"></div>\n    <div class="modal-actions"><button class="btn btn-secondary" type="button" onclick="closePartsModal()">Cancelar</button><button class="btn btn-primary" type="button" onclick="confirmPartsUse()">Confirmar salida</button></div>\n  </div>\n</div>\n\n<!-- Modal acciones móvil -->\n<div class="modal-overlay" id="actionsModal">\n  <div class="modal" role="dialog" aria-modal="true">\n    <h3 id="actionsTitle">Acciones</h3><div class="muted" id="actionsSub">Selecciona una acción</div>\n    <div id="actionsBody" style="display:grid;gap:9px;margin-top:12px"></div>\n    <div class="modal-actions"><button class="btn btn-secondary" type="button" onclick="closeActionsModal()">Cerrar</button></div>\n  </div>\n</div>\n
+<body>
+<aside>
+  <div class="brand">
+    <div class="brand-icon">🔧</div>
+    <div class="brand-text"><strong>JR Connection</strong><span>Sistema técnico</span></div>
+  </div>
+  <div class="sidebar-label">Navegación</div>
+  <nav>
+    <a href="index.html">🏠 <span>Dashboard</span></a>
+    <a href="inventario.html">📦 <span>Inventario</span></a>
+    <a href="reparaciones.html" class="active">🔧 <span>Reparaciones</span></a>
+    <a href="proceso.html">⚡ <span>Proceso / TV</span></a>
+  </nav>
+</aside>
+
+<main>
+  <div class="page-head">
+    <div>
+      <div class="eyebrow">Gestión técnica</div>
+      <h1>Reparaciones</h1>
+      <p>Registra, asigna y controla el estado de cada equipo.</p>
+    </div>
+    <div class="head-actions"><span class="result-count">Panel operativo</span></div>
+  </div>
+
+  <section class="stats-grid">
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Activas</span><span class="stat-icon">🔧</span></div><div class="stat-value" id="statActive">0</div><div class="stat-hint">Equipos aún no entregados</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Pendientes</span><span class="stat-icon">⏳</span></div><div class="stat-value" id="statPending">0</div><div class="stat-hint">Esperando diagnóstico o inicio</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">En proceso</span><span class="stat-icon">⚙️</span></div><div class="stat-value" id="statProgress">0</div><div class="stat-hint">Trabajos actualmente activos</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Completadas</span><span class="stat-icon">✓</span></div><div class="stat-value" id="statCompleted">0</div><div class="stat-hint">Reparaciones terminadas</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="stat-label">Canceladas</span><span class="stat-icon">✕</span></div><div class="stat-value" id="statCancelled">0</div><div class="stat-hint">Entregadas sin reparar</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h2 class="panel-title">Nueva reparación</h2><p class="panel-subtitle">Completa los datos del cliente, equipo y responsable.</p></div>
+    </div>
+    <form id="repairForm" onsubmit="event.preventDefault(); addRepair();">
+      <div class="form-section">
+        <div class="form-group"><label for="clientName">Cliente</label><input class="form-control" id="clientName" placeholder="Nombre completo"></div>
+        <div class="form-group"><label for="clientPhone">Teléfono</label><input class="form-control" id="clientPhone" placeholder="Número de contacto"></div>
+        <div class="form-group"><label for="deviceModel">Dispositivo</label><input class="form-control" id="deviceModel" placeholder="Ej. iPhone 13, A55 5G..."></div>
+        <div class="form-group"><label for="deviceColor">Color</label><input class="form-control" id="deviceColor" placeholder="Color del equipo (opcional)"></div>
+        <div class="form-group full"><label for="issue">Problema / reparación solicitada</label><input class="form-control" id="issue" placeholder="Describe la falla o trabajo a realizar"></div>
+        <div class="form-group"><label>Precio</label><div class="price-group"><select class="form-control" id="currency"><option value="C$">C$</option><option value="$">$</option></select><input class="form-control" id="price" placeholder="Monto"></div></div>
+        <div class="form-group"><label for="receivedBy">Recibió</label><select class="form-control" id="receivedBy"><option value="">-- Seleccionar --</option></select></div>
+        <div class="form-group"><label for="assignedTo">Técnico asignado</label><select class="form-control" id="assignedTo"><option value="">-- Seleccionar --</option></select></div>
+        <div class="form-actions"><button class="btn btn-secondary" id="cancelEdit" type="button" onclick="cancelEdit()" style="display:none">Cancelar</button><button class="btn btn-primary" id="submitRepair" type="submit">＋ Agregar reparación</button></div>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h2 class="panel-title">Reparaciones activas</h2><p class="panel-subtitle">Consulta rápidamente clientes, equipos, responsables y estados.</p></div>
+    </div>
+    <div class="toolbar"><div class="search-wrap"><span>⌕</span><input id="search" placeholder="Buscar por cliente o teléfono..."></div><span class="result-count">Actualización en tiempo real</span></div>
+    <div class="table-wrap"><table><thead><tr><th class="col-client">Cliente</th><th class="col-phone">Teléfono</th><th class="col-model">Modelo</th><th class="col-color">Color</th><th class="col-issue">Problema</th><th class="col-price">Precio</th><th class="col-receivedAt">Recibido</th><th class="col-receivedBy">Recibió</th><th class="col-assigned">Asignado</th><th class="col-status">Estado</th><th class="col-actions">Acciones</th></tr></thead><tbody id="repairsTable"></tbody></table></div>
+    <div id="activePager"></div>
+  </section>
+
+  <section class="panel">
+    <details>
+      <summary>Historial de reparaciones completadas</summary>
+      <div class="history-filters">
+        <input type="date" id="historyFrom" title="Desde">
+        <input type="date" id="historyTo" title="Hasta">
+        <input id="historySearch" placeholder="Buscar cliente, teléfono o modelo...">
+        <button class="btn btn-primary" onclick="applyHistoryFilters()">Filtrar</button>
+        <button class="btn btn-secondary" onclick="clearHistoryFilters()">Limpiar</button>
+      </div>
+      <div class="table-wrap"><table class="details-table"><thead><tr><th class="col-client">Cliente</th><th class="col-phone">Teléfono</th><th class="col-model">Modelo</th><th class="col-color">Color</th><th class="col-issue">Problema</th><th class="col-price">Precio</th><th class="col-receivedAt">Recibido</th><th class="col-receivedBy">Recibió</th><th class="col-assigned">Asignado</th><th class="col-status">Estado</th><th class="col-actions">Acciones</th></tr></thead><tbody id="completedTable"></tbody></table></div>
+      <div id="completedPager"></div>
+    </details>
+  </section>
+</main>
+
+<!-- Modal de repuestos -->
+<div class="modal-overlay" id="partsModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="partsTitle">Usar repuestos</h3>
+    <div class="muted">Busca el repuesto, selecciona cantidad y confirma la salida. El stock se descuenta automáticamente.</div>
+    <div class="modal-grid">
+      <div><label>Buscar repuesto</label><input id="stockSearch" placeholder="Ej. iPhone 11, batería, OLED..."></div>
+      <div><label>Item del inventario</label><select id="stockSelect"></select></div>
+      <div><label>Cantidad</label><input id="partQty" type="number" min="1" placeholder="Ej. 1"></div>
+      <div><button class="btn btn-primary" type="button" onclick="addPartLine()">＋ Agregar item</button></div>
+    </div>
+    <div style="margin-top:14px"><label style="font-size:11px;color:#475569;font-weight:800;text-transform:uppercase;display:block;margin-bottom:6px">Autorizó</label><select class="form-control" id="authSelect"></select></div>
+    <div id="selectedParts" style="margin-top:12px"></div>
+    <div class="modal-actions"><button class="btn btn-secondary" type="button" onclick="closePartsModal()">Cancelar</button><button class="btn btn-primary" type="button" onclick="confirmPartsUse()">Confirmar salida</button></div>
+  </div>
+</div>
+
+<!-- Modal acciones móvil -->
+<div class="modal-overlay" id="actionsModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="actionsTitle">Acciones</h3><div class="muted" id="actionsSub">Selecciona una acción</div>
+    <div id="actionsBody" style="display:grid;gap:9px;margin-top:12px"></div>
+    <div class="modal-actions"><button class="btn btn-secondary" type="button" onclick="closeActionsModal()">Cerrar</button></div>
+  </div>
+</div>
+
 </body>
 </html>
