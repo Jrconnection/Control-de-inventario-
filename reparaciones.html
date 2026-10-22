@@ -69,11 +69,11 @@ function getFormData(){const budget=num('budget')??num('price');const surchargeP
  surchargePct,totalService:total,balance:Math.max(0,total-deposit),surcharge,assignedTo:val('assignedTo'),receivedBy:val('receivedBy'),
  updatedAt:nowLocalString(),updatedAtTS:Date.now()
 };}
-function clearForm(){document.getElementById('repairForm').reset();document.getElementById('entryDate').value=new Date().toISOString().slice(0,10);document.getElementById('orderStatus').value='Pendiente';document.querySelectorAll('.device-type').forEach((x,i)=>x.classList.toggle('active',i===0));setAccessories([]);document.getElementById('submitRepair').textContent='Guardar reparación';document.getElementById('cancelEdit').style.display='none';editingId=null;calculateTotals();}
+function clearForm(){document.getElementById('repairForm').reset();document.getElementById('entryDate').value=new Date().toISOString().slice(0,10);document.getElementById('orderStatus').value='Pendiente';document.querySelectorAll('.device-type').forEach((x,i)=>x.classList.toggle('active',i===0));setAccessories([]);document.getElementById('submitRepair').textContent='Guardar reparación';document.getElementById('cancelEdit').style.display='none';editingId=null;calculateTotals();window.restorePattern?.();}
 function askDeliveredBy(){const who=prompt('¿Quién entregó el teléfono?');if(who===null)return null;const clean=who.trim();if(!clean){alert('Debes escribir quién entregó.');return null}return clean;}
 window.openWhatsApp=(phone,name)=>{const digits=String(phone||'').replace(/\D/g,'');if(!digits){alert('Número inválido');return}window.open(`https://wa.me/${digits}?text=${encodeURIComponent(`Hola ${name||''}, te escribo sobre el avance de tu reparación.`)}`,'_blank');};
-window.addRepair=async()=>{const d=getFormData();if(!d.clientName||!d.clientPhone||!d.brand||!d.model||!d.issue||!d.receivedBy||!d.assignedTo){alert('Completa cliente, teléfono, marca, modelo, falla, quién recibió y técnico.');return}if(editingId){await update(ref(db,'repairs/'+editingId),d);alert('Reparación actualizada.');clearForm();return}const newRef=push(ref(db,'repairs'));await set(newRef,{...d,status:'Pendiente',delivered:false,receivedAt:nowLocalString(),receivedAtTS:Date.now(),partsUsed:[]});clearForm();activePage=1;alert('Reparación registrada correctamente.');};
-window.startEdit=id=>{const r=repairs.find(x=>x.id===id);if(!r)return;editingId=id;const map={clientName:r.clientName,clientPhone:r.clientPhone,clientEmail:r.clientEmail,clientAddress:r.clientAddress,documentId:r.documentId,orderNumber:r.orderNumber,entryDate:r.entryDate,deliveryDate:r.deliveryDate,orderStatus:r.status,paymentMethod:r.paymentMethod,deviceBrand:r.brand,deviceModel:r.model,deviceColor:r.color,imei:r.imei,physicalCondition:r.physicalCondition,observations:r.observations,issue:r.issue,repairWork:r.repairWork,pattern:r.pattern,pin:r.pin,passcode:r.passcode,budget:r.budget??r.price,deposit:r.deposit,surchargePct:r.surchargePct,assignedTo:r.assignedTo,receivedBy:r.receivedBy,currency:r.currency||'$'};Object.entries(map).forEach(([k,v])=>{const e=document.getElementById(k);if(e)e.value=v??''});setAccessories(r.accessories||[]);document.querySelectorAll('.device-type').forEach(x=>x.classList.toggle('active',x.dataset.type===(r.deviceType||'Celular')));calculateTotals();document.getElementById('submitRepair').textContent='Guardar cambios';document.getElementById('cancelEdit').style.display='inline-block';window.scrollTo({top:0,behavior:'smooth'});};
+window.addRepair=async()=>{const d=getFormData();if(!d.orderNumber||!d.clientName||!d.clientPhone||!d.brand||!d.model||!d.issue||!d.receivedBy||!d.assignedTo){alert('Completa código/orden, cliente, teléfono, marca, modelo, falla, quién recibió y técnico.');return}if(editingId){await update(ref(db,'repairs/'+editingId),d);alert('Reparación actualizada.');clearForm();return}const newRef=push(ref(db,'repairs'));await set(newRef,{...d,status:'Pendiente',delivered:false,receivedAt:nowLocalString(),receivedAtTS:Date.now(),partsUsed:[]});clearForm();activePage=1;alert('Reparación registrada correctamente.');};
+window.startEdit=id=>{const r=repairs.find(x=>x.id===id);if(!r)return;editingId=id;const map={clientName:r.clientName,clientPhone:r.clientPhone,clientEmail:r.clientEmail,clientAddress:r.clientAddress,documentId:r.documentId,orderNumber:r.orderNumber,entryDate:r.entryDate,deliveryDate:r.deliveryDate,orderStatus:r.status,paymentMethod:r.paymentMethod,deviceBrand:r.brand,deviceModel:r.model,deviceColor:r.color,imei:r.imei,physicalCondition:r.physicalCondition,observations:r.observations,issue:r.issue,repairWork:r.repairWork,pattern:r.pattern,pin:r.pin,passcode:r.passcode,budget:r.budget??r.price,deposit:r.deposit,surchargePct:r.surchargePct,assignedTo:r.assignedTo,receivedBy:r.receivedBy,currency:r.currency||'$'};Object.entries(map).forEach(([k,v])=>{const e=document.getElementById(k);if(e)e.value=v??''});setAccessories(r.accessories||[]);document.querySelectorAll('.device-type').forEach(x=>x.classList.toggle('active',x.dataset.type===(r.deviceType||'Celular')));calculateTotals();window.restorePattern?.();document.getElementById('submitRepair').textContent='Guardar cambios';document.getElementById('cancelEdit').style.display='inline-block';window.scrollTo({top:0,behavior:'smooth'});};
 window.cancelEdit=clearForm;
 window.updateStatus=async(id,status)=>{const p={status,statusUpdatedAt:nowLocalString(),statusUpdatedAtTS:Date.now()};if(status==='En Proceso'){p.inProgressAt=nowLocalString();p.inProgressAtTS=Date.now()}if(status==='Completado'){p.completedAt=nowLocalString();p.completedAtTS=Date.now();p.completedDayTS=startOfTodayTS()}await update(ref(db,'repairs/'+id),p);};
 window.markDelivered=async id=>{const r=repairs.find(x=>x.id===id);if(!r)return;if(!confirm(`¿Confirmas entregar el equipo de ${r.clientName||'este cliente'}?`))return;const deliveredBy=askDeliveredBy();if(!deliveredBy)return;await update(ref(db,'repairs/'+id),{delivered:true,deliveredAt:nowLocalString(),deliveredAtTS:Date.now(),deliveredBy,status:'Completado'});};
@@ -82,7 +82,7 @@ function renderPager(container,page,totalPages,onPrev,onNext){if(!container)retu
 window.goToPage=(id,p)=>{if(id==='activePager')activePage=p;else completedPage=p;render()};window.jumpToPage=(id,v)=>{const p=parseInt(v);if(!p)return;if(id==='activePager')activePage=p;else completedPage=p;render()};
 function rowActions(r){const count=(r.partsUsed||[]).reduce((a,x)=>a+(Number(x.qty)||0),0);return `<button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button>${r.status!=='Completado'&&!r.delivered?`<button class="action-btn action-yellow" onclick="updateStatus('${r.id}','En Proceso')">▶ Proceso</button><button class="action-btn action-green" onclick="updateStatus('${r.id}','Completado')">✓ Completar</button>`:''}<button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos ${count?`(${count})`:''}</button>${!r.delivered?`<button class="action-btn" onclick="markDelivered('${r.id}')">📦 Entregar</button><button class="action-btn action-red" onclick="cancelRepair('${r.id}')">✕ Sin reparar</button>`:''}`;}
 function statusBadge(r){const c=r.status==='Pendiente'?'pending':r.status==='En Proceso'?'inprogress':r.status==='Cancelado'?'cancelled':'completed';return `<span class="badge ${c}">${esc(r.status||'Pendiente')}</span>`;}
-function render(){updateStats();const note=document.querySelector('.result-count');if(note)note.textContent=`Firebase · ${repairs.length} reparaciones cargadas`;if(!repairsTable||!completedTable)return;const s=(searchInput?.value||'').toLowerCase().trim();let active=repairs.filter(r=>!r.delivered).filter(r=>!s||`${r.clientName||''} ${r.clientPhone||''} ${r.model||''} ${r.imei||''}`.toLowerCase().includes(s)).sort((a,b)=>(Number(b.receivedAtTS)||0)-(Number(a.receivedAtTS)||0));const at=Math.max(1,Math.ceil(active.length/PAGE_SIZE));activePage=clamp(activePage,1,at);const ai=active.slice((activePage-1)*PAGE_SIZE,activePage*PAGE_SIZE);repairsTable.innerHTML=ai.map(r=>`<tr><td>${esc(r.clientName)}</td><td><a class="whatsapp-link" href="#" onclick="event.preventDefault();openWhatsApp('${esc(r.clientPhone)}','${esc(r.clientName)}')">${esc(r.clientPhone)}</a></td><td>${esc(r.brand||'')} ${esc(r.model||'')}</td><td>${esc(r.color||'-')}</td><td class="issue-cell" data-full="${esc(r.issue||'-')}">${esc(r.issue||'-')}</td><td>${r.price==null?'-':esc(r.currency||'$')+' '+r.price}</td><td>${esc(r.receivedAt||'-')}</td><td>${esc(r.receivedBy||'-')}</td><td>${esc(r.assignedTo||'-')}</td><td>${statusBadge(r)}</td><td><div class="actions-wrap">${rowActions(r)}</div><div class="actions-menu"><button class="action-btn" onclick="openActionsModal('${r.id}')">⋯</button></div></td></tr>`).join('');renderPager(activePager,activePage,at,()=>{activePage--;render()},()=>{activePage++;render()});let done=repairs.filter(r=>r.delivered||r.status==='Completado'||r.status==='Cancelado').filter(r=>{if(historyFilters.search&&!`${r.clientName||''} ${r.clientPhone||''} ${r.model||''}`.toLowerCase().includes(historyFilters.search))return false;const ts=r.deliveredAtTS||r.completedAtTS||r.receivedAtTS;if(historyFilters.from&&ts<new Date(historyFilters.from).getTime())return false;if(historyFilters.to&&ts>new Date(historyFilters.to).getTime()+86400000)return false;return true}).sort((a,b)=>(b.deliveredAtTS||b.completedAtTS||0)-(a.deliveredAtTS||a.completedAtTS||0));const ct=Math.max(1,Math.ceil(done.length/PAGE_SIZE));completedPage=clamp(completedPage,1,ct);const ci=done.slice((completedPage-1)*PAGE_SIZE,completedPage*PAGE_SIZE);completedTable.innerHTML=ci.map(r=>`<tr><td>${esc(r.clientName)}</td><td>${esc(r.clientPhone||'-')}</td><td>${esc(r.brand||'')} ${esc(r.model||'')}</td><td>${esc(r.color||'-')}</td><td class="issue-cell" data-full="${esc(r.issue||'-')}">${esc(r.issue||'-')}</td><td>${r.price==null?'-':esc(r.currency||'$')+' '+r.price}</td><td>${esc(r.receivedAt||'-')}</td><td>${esc(r.receivedBy||'-')}</td><td>${esc(r.assignedTo||'-')}</td><td>${statusBadge(r)}</td><td><div class="actions-wrap"><button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button><button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos</button></div><div class="actions-menu"><button class="action-btn" onclick="openActionsModal('${r.id}')">⋯</button></div></td></tr>`).join('');renderPager(completedPager,completedPage,ct,()=>{completedPage--;render()},()=>{completedPage++;render()});}
+function render(){updateStats();const note=document.querySelector('.result-count');if(note)note.textContent=`Firebase · ${repairs.length} reparaciones cargadas`;if(!repairsTable||!completedTable)return;const s=(searchInput?.value||'').toLowerCase().trim();let active=repairs.filter(r=>!r.delivered).filter(r=>!s||`${r.clientName||''} ${r.clientPhone||''} ${r.orderNumber||''} ${r.model||''} ${r.imei||''}`.toLowerCase().includes(s)).sort((a,b)=>(Number(b.receivedAtTS)||0)-(Number(a.receivedAtTS)||0));const at=Math.max(1,Math.ceil(active.length/PAGE_SIZE));activePage=clamp(activePage,1,at);const ai=active.slice((activePage-1)*PAGE_SIZE,activePage*PAGE_SIZE);repairsTable.innerHTML=ai.map(r=>`<tr><td>${esc(r.clientName)}</td><td><span style="display:inline-flex;align-items:center;padding:4px 7px;border-radius:5px;background:#0b2d43;border:1px solid #1a6288;color:#65caff;font-weight:900;letter-spacing:.04em">${esc(r.orderNumber||'-')}</span></td><td><a class="whatsapp-link" href="#" onclick="event.preventDefault();openWhatsApp('${esc(r.clientPhone)}','${esc(r.clientName)}')">${esc(r.clientPhone)}</a></td><td>${esc(r.brand||'')} ${esc(r.model||'')}</td><td>${esc(r.color||'-')}</td><td class="issue-cell" data-full="${esc(r.issue||'-')}">${esc(r.issue||'-')}</td><td>${r.price==null?'-':esc(r.currency||'$')+' '+r.price}</td><td>${esc(r.receivedAt||'-')}</td><td>${esc(r.receivedBy||'-')}</td><td>${esc(r.assignedTo||'-')}</td><td>${statusBadge(r)}</td><td><div class="actions-wrap">${rowActions(r)}</div><div class="actions-menu"><button class="action-btn" onclick="openActionsModal('${r.id}')">⋯</button></div></td></tr>`).join('');renderPager(activePager,activePage,at,()=>{activePage--;render()},()=>{activePage++;render()});let done=repairs.filter(r=>r.delivered||r.status==='Completado'||r.status==='Cancelado').filter(r=>{if(historyFilters.search&&!`${r.clientName||''} ${r.clientPhone||''} ${r.model||''}`.toLowerCase().includes(historyFilters.search))return false;const ts=r.deliveredAtTS||r.completedAtTS||r.receivedAtTS;if(historyFilters.from&&ts<new Date(historyFilters.from).getTime())return false;if(historyFilters.to&&ts>new Date(historyFilters.to).getTime()+86400000)return false;return true}).sort((a,b)=>(b.deliveredAtTS||b.completedAtTS||0)-(a.deliveredAtTS||a.completedAtTS||0));const ct=Math.max(1,Math.ceil(done.length/PAGE_SIZE));completedPage=clamp(completedPage,1,ct);const ci=done.slice((completedPage-1)*PAGE_SIZE,completedPage*PAGE_SIZE);completedTable.innerHTML=ci.map(r=>`<tr><td>${esc(r.clientName)}</td><td>${esc(r.clientPhone||'-')}</td><td>${esc(r.brand||'')} ${esc(r.model||'')}</td><td>${esc(r.color||'-')}</td><td class="issue-cell" data-full="${esc(r.issue||'-')}">${esc(r.issue||'-')}</td><td>${r.price==null?'-':esc(r.currency||'$')+' '+r.price}</td><td>${esc(r.receivedAt||'-')}</td><td>${esc(r.receivedBy||'-')}</td><td>${esc(r.assignedTo||'-')}</td><td>${statusBadge(r)}</td><td><div class="actions-wrap"><button class="action-btn action-primary" onclick="startEdit('${r.id}')">✎ Editar</button><button class="action-btn" onclick="openPartsModal('${r.id}')">🧩 Repuestos</button></div><div class="actions-menu"><button class="action-btn" onclick="openActionsModal('${r.id}')">⋯</button></div></td></tr>`).join('');renderPager(completedPager,completedPage,ct,()=>{completedPage--;render()},()=>{completedPage++;render()});}
 function updateStats(){const active=repairs.filter(r=>!r.delivered);const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set('statActive',active.length);set('statPending',active.filter(r=>r.status==='Pendiente').length);set('statProgress',active.filter(r=>r.status==='En Proceso').length);set('statCompleted',repairs.filter(r=>r.status==='Completado'||r.delivered).length);set('statCancelled',repairs.filter(r=>r.status==='Cancelado').length);}
 
 /* Firebase */
@@ -152,7 +152,108 @@ window.openActionsModal=id=>{const r=repairs.find(x=>x.id===id);if(!r)return;doc
 window.closeActionsModal=()=>document.getElementById('actionsModal').style.display='none';
 window.applyHistoryFilters=()=>{historyFilters={from:val('historyFrom'),to:val('historyTo'),search:val('historySearch').toLowerCase()};completedPage=1;render()};window.clearHistoryFilters=()=>{historyFilters={from:null,to:null,search:''};document.getElementById('historyFrom').value='';document.getElementById('historyTo').value='';document.getElementById('historySearch').value='';render()};
 window.setDeviceType=type=>document.querySelectorAll('.device-type').forEach(x=>x.classList.toggle('active',x.dataset.type===type));window.addPattern=n=>{const e=document.getElementById('pattern');e.value+=(e.value?',':'')+n};
-window.addEventListener('DOMContentLoaded',()=>{searchInput=document.getElementById('search');repairsTable=document.getElementById('repairsTable');completedTable=document.getElementById('completedTable');activePager=document.getElementById('activePager');completedPager=document.getElementById('completedPager');populateSelects();document.getElementById('entryDate').value=new Date().toISOString().slice(0,10);document.getElementById('search').addEventListener('input',()=>{activePage=1;render()});document.getElementById('stockSearch').addEventListener('input',refreshStockSelect);['budget','deposit','surchargePct'].forEach(id=>document.getElementById(id).addEventListener('input',calculateTotals));document.querySelectorAll('.device-type').forEach(x=>x.addEventListener('click',()=>setDeviceType(x.dataset.type)));document.querySelectorAll('.pin-tabs button').forEach(x=>x.addEventListener('click',()=>{document.querySelectorAll('.pin-tabs button').forEach(b=>b.classList.remove('active'));x.classList.add('active');const isPattern=x.dataset.tab==='pattern';document.getElementById('patternPanel').style.display=isPattern?'block':'none';document.getElementById('pinPanel').style.display=isPattern?'none':'block'}));document.querySelectorAll('.numpad button[data-n]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('pin').value+=(b.dataset.n)}));document.getElementById('clearPin').addEventListener('click',()=>document.getElementById('pin').value='');document.getElementById('partsModal').addEventListener('click',e=>{if(e.target.id==='partsModal')closePartsModal()});document.getElementById('actionsModal').addEventListener('click',e=>{if(e.target.id==='actionsModal')closeActionsModal()});clearForm();render()});
+function setupPatternUI(){
+  const canvas=document.getElementById('patternCanvas');
+  const patternInput=document.getElementById('pattern');
+  const status=document.getElementById('patternStatus');
+  if(!canvas||!patternInput)return;
+  const ctx=canvas.getContext('2d'), selected=[], nodes=[];
+  let drawing=false;
+  for(let row=0;row<3;row++)for(let col=0;col<3;col++)nodes.push({id:row*3+col+1,x:50+col*100,y:50+row*100});
+
+  function draw(){
+    ctx.clearRect(0,0,300,300);
+    ctx.fillStyle='#04121e';ctx.fillRect(0,0,300,300);
+    if(selected.length>1){
+      ctx.beginPath();ctx.moveTo(selected[0].x,selected[0].y);
+      selected.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle='#16b8ee';ctx.lineWidth=8;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+    }
+    nodes.forEach(n=>{
+      const active=selected.some(x=>x.id===n.id);
+      ctx.beginPath();ctx.arc(n.x,n.y,active?22:15,0,Math.PI*2);
+      ctx.fillStyle=active?'#16b8ee':'#12304a';ctx.fill();
+      ctx.beginPath();ctx.arc(n.x,n.y,active?7:5,0,Math.PI*2);
+      ctx.fillStyle=active?'#fff':'#6e8da1';ctx.fill();
+    });
+  }
+  function pointAt(e){
+    const r=canvas.getBoundingClientRect(),sx=300/r.width,sy=300/r.height;
+    const x=(e.clientX-r.left)*sx,y=(e.clientY-r.top)*sy;
+    let best=null,bd=Infinity;
+    nodes.forEach(n=>{const d=Math.hypot(x-n.x,y-n.y);if(d<bd){bd=d;best=n;}});
+    return {n:best,d:bd};
+  }
+  function addNode(n){
+    if(!n||selected.some(x=>x.id===n.id))return;
+    const last=selected[selected.length-1];
+    if(last){
+      const mx=(last.x+n.x)/2,my=(last.y+n.y)/2;
+      const middle=nodes.find(p=>Math.hypot(p.x-mx,p.y-my)<12);
+      if(middle&&!selected.some(x=>x.id===middle.id))selected.push(middle);
+    }
+    selected.push(n);
+    patternInput.value=selected.map(x=>x.id).join('-');
+    status.textContent=`Patrón: ${selected.length} puntos`;
+    draw();
+  }
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();drawing=true;const h=pointAt(e);if(h.d<=42)addNode(h.n);});
+  canvas.addEventListener('pointermove',e=>{if(!drawing)return;e.preventDefault();const h=pointAt(e);if(h.d<=42)addNode(h.n);});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>canvas.addEventListener(ev,e=>{drawing=false;}));
+  function clear(){
+    selected.length=0;patternInput.value='';status.textContent='Dibuja un patrón de al menos 4 puntos';draw();
+  }
+  document.getElementById('clearPattern').onclick=clear;
+  document.getElementById('finishPattern').onclick=()=>{
+    if(selected.length<4){alert('El patrón debe tener al menos 4 puntos.');return;}
+    patternInput.value=selected.map(x=>x.id).join('-');
+    status.textContent=`Patrón guardado · ${selected.length} puntos`;
+  };
+  window.restorePattern=()=>{
+    const ids=String(patternInput.value||'').split('-').map(Number).filter(Boolean);
+    selected.length=0;
+    ids.forEach(id=>{const n=nodes.find(x=>x.id===id);if(n)selected.push(n);});
+    draw();
+    status.textContent=selected.length?`Patrón cargado · ${selected.length} puntos`:'Dibuja un patrón de al menos 4 puntos';
+  };
+  draw();
+}
+
+window.addPattern=()=>{};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  searchInput=document.getElementById('search');
+  repairsTable=document.getElementById('repairsTable');
+  completedTable=document.getElementById('completedTable');
+  activePager=document.getElementById('activePager');
+  completedPager=document.getElementById('completedPager');
+  populateSelects();
+  document.getElementById('entryDate').value=new Date().toISOString().slice(0,10);
+  document.getElementById('search').addEventListener('input',()=>{activePage=1;render()});
+  document.getElementById('stockSearch').addEventListener('input',refreshStockSelect);
+  ['budget','deposit','surchargePct'].forEach(id=>document.getElementById(id).addEventListener('input',calculateTotals));
+  document.querySelectorAll('.device-type').forEach(x=>x.addEventListener('click',()=>setDeviceType(x.dataset.type)));
+  document.querySelectorAll('.pin-tabs button').forEach(x=>x.addEventListener('click',()=>{
+    document.querySelectorAll('.pin-tabs button').forEach(b=>b.classList.remove('active'));
+    x.classList.add('active');
+    const p=x.dataset.tab==='pattern';
+    document.getElementById('patternPanel').style.display=p?'block':'none';
+    document.getElementById('pinPanel').style.display=p?'none':'block';
+  }));
+  document.querySelectorAll('.numpad button[data-n]').forEach(b=>b.addEventListener('click',()=>{
+    const p=document.getElementById('pin');if(p.value.length<8)p.value+=b.dataset.n;
+  }));
+  document.getElementById('clearPin').onclick=()=>document.getElementById('pin').value='';
+  document.getElementById('backspacePin').onclick=()=>{const p=document.getElementById('pin');p.value=p.value.slice(0,-1);};
+  document.getElementById('togglePin').onclick=()=>{
+    const p=document.getElementById('pin'),b=document.getElementById('togglePin');
+    p.type=p.type==='password'?'text':'password';b.textContent=p.type==='password'?'Mostrar':'Ocultar';
+  };
+  document.getElementById('pin').type='password';
+  document.getElementById('partsModal').addEventListener('click',e=>{if(e.target.id==='partsModal')closePartsModal()});
+  document.getElementById('actionsModal').addEventListener('click',e=>{if(e.target.id==='actionsModal')closeActionsModal()});
+  setupPatternUI();clearForm();render();
+});
 </script>
 </head>
 <body>
@@ -168,13 +269,11 @@ window.addEventListener('DOMContentLoaded',()=>{searchInput=document.getElementB
 <section class="card">
 <form id="repairForm" onsubmit="event.preventDefault();addRepair()">
 <div class="grid g4">
- <div class="field"><label>Orden</label><input class="input" id="orderNumber" placeholder="Ej. 1025"></div>
+ <div class="field"><label>Código / Orden *</label><input class="input" id="orderNumber" placeholder="Ej. 1025"></div>
  <div class="field"><label>Fecha de entrada</label><input class="input" id="entryDate" type="date"></div>
  <div class="field"><label>Cliente *</label><input class="input" id="clientName" placeholder="Nombre completo"></div>
  <div class="field"><label>Teléfono / WhatsApp *</label><input class="input" id="clientPhone" placeholder="Número de contacto"></div>
- <div class="field span2"><label>Dirección / Correo</label><input class="input" id="clientAddress" placeholder="Dirección del cliente"></div>
- <div class="field"><label>Correo electrónico</label><input class="input" id="clientEmail" type="email" placeholder="correo@ejemplo.com"></div>
- <div class="field"><label>Cédula / Documento</label><input class="input" id="documentId" placeholder="Número de documento"></div>
+  <div class="field span2"><label>Correo electrónico <span style="font-weight:600;color:#60798a;text-transform:none;letter-spacing:0">(opcional)</span></label><input class="input" id="clientEmail" type="email" placeholder="icloud@gmail.com / gmail.com (opcional)"></div>
  <div class="field"><label>Estado</label><select class="select" id="orderStatus"><option>Pendiente</option><option>En Proceso</option><option>Completado</option><option>Cancelado</option></select></div>
  <div class="field"><label>Forma de pago</label><select class="select" id="paymentMethod"><option value="">-- Seleccionar --</option><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Pago móvil</option><option>Crédito</option></select></div>
 </div>
@@ -216,10 +315,44 @@ window.addEventListener('DOMContentLoaded',()=>{searchInput=document.getElementB
 <div class="right">
 <section class="card"><div class="quick"><div class="quick-title">⚡ SERVICIO RÁPIDO / PLANTILLA</div></div><div class="quick-row"><select class="select" id="quickTemplate"><option value="">Seleccionar plantilla...</option><option value="Diagnóstico general">Recepción completa / diagnóstico general</option><option value="Cambio de pantalla">Cambio de pantalla</option><option value="Cambio de batería">Cambio de batería</option><option value="Software">Diagnóstico / reparación de software</option></select><button class="apply" onclick="const v=document.getElementById('quickTemplate').value;if(v)document.getElementById('issue').value=v">Aplicar</button></div></section>
 <section class="card"><div class="quick-title" style="margin-bottom:10px">⚡ ESTADO DE LA ORDEN</div><div class="status-list"><div class="status-row"><span class="dot green">◆</span><span class="status-pill green">Recibido</span><span>Equipo recibido en mostrador</span><span class="radio"></span></div><div class="status-row"><span class="dot blue">◆</span><span class="status-pill blue">En reparación</span><span>En proceso de reparación</span><span class="checkmark">✓</span></div><div class="status-row"><span class="dot orange">◆</span><span class="status-pill orange">Entregado</span><span>Equipo entregado al cliente</span><span class="radio" style="border-color:#ff9225"></span></div></div></section>
-<section class="card"><div class="quick-title" style="margin-bottom:10px">🔐 PATRÓN / PIN</div><div class="pin-tabs"><button type="button" class="active" data-tab="pattern">Patrón</button><button type="button" data-tab="pin">PIN</button></div><div class="pin-area"><div id="patternPanel"><div class="pattern"><button type="button" onclick="addPattern(1)">1</button><button type="button" onclick="addPattern(2)">2</button><button type="button" onclick="addPattern(3)">3</button><button type="button" onclick="addPattern(4)">4</button><button type="button" onclick="addPattern(5)">5</button><button type="button" onclick="addPattern(6)">6</button><button type="button" onclick="addPattern(7)">7</button><button type="button" onclick="addPattern(8)">8</button><button type="button" onclick="addPattern(9)">9</button></div><input class="input pin-display" id="pattern" placeholder="Secuencia del patrón"></div><div id="pinPanel" style="display:none"><div class="numpad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join('')}<button type="button" class="clear-pin" id="clearPin">⌫ Limpiar</button></div></div></div><div class="field pin-display"><label>Clave / PIN guardado</label><input class="input" id="pin" placeholder="PIN numérico"></div></section>
+<section class="card">
+<div class="quick-title" style="margin-bottom:10px">🔐 PATRÓN / PIN</div>
+<div class="pin-tabs">
+  <button type="button" class="active" data-tab="pattern">Patrón</button>
+  <button type="button" data-tab="pin">PIN</button>
+</div>
+<div class="pin-area">
+  <div id="patternPanel">
+    <div style="display:flex;justify-content:center">
+      <canvas id="patternCanvas" width="300" height="300" style="width:100%;max-width:300px;aspect-ratio:1;border:1px solid #1d4057;border-radius:10px;background:#04121e;touch-action:none"></canvas>
+    </div>
+    <div id="patternStatus" style="text-align:center;color:#8ea6b8;font-size:10px;margin:7px 0">Dibuja un patrón de al menos 4 puntos</div>
+    <div style="display:flex;gap:7px">
+      <button type="button" class="btn btn-secondary" style="flex:1;height:34px" id="clearPattern">Limpiar</button>
+      <button type="button" class="btn btn-primary" style="flex:1;height:34px" id="finishPattern">Listo</button>
+    </div>
+    <input class="input pin-display" id="pattern" placeholder="Patrón guardado" readonly>
+  </div>
+  <div id="pinPanel" style="display:none">
+    <div class="numpad">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`<button type="button" data-n="${n}">${n}</button>`).join('')}
+      <button type="button" data-n="0">0</button>
+      <button type="button" id="backspacePin">⌫</button>
+      <button type="button" id="clearPin">C</button>
+    </div>
+  </div>
+</div>
+<div class="field pin-display">
+  <label>PIN guardado</label>
+  <div style="display:flex;gap:6px">
+    <input class="input" id="pin" inputmode="numeric" maxlength="8" placeholder="PIN numérico (opcional)" style="flex:1">
+    <button type="button" class="action-btn" id="togglePin" style="height:38px">Mostrar</button>
+  </div>
+</div>
+</section>
 </div></div>
 
-<section class="card" id="activeSection"><div class="kpis"><div class="kpi"><span>Activas</span><b id="statActive">0</b></div><div class="kpi"><span>Pendientes</span><b id="statPending">0</b></div><div class="kpi"><span>En proceso</span><b id="statProgress">0</b></div><div class="kpi"><span>Completadas</span><b id="statCompleted">0</b></div><div class="kpi"><span>Canceladas</span><b id="statCancelled">0</b></div></div><div class="toolbar"><div class="search"><span>⌕</span><input class="input" id="search" placeholder="Buscar cliente, teléfono, modelo o IMEI..."></div><span class="result-count">Firebase · actualización en tiempo real</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Modelo</th><th>Color</th><th>Problema</th><th>Precio</th><th>Recibido</th><th>Recibió</th><th>Asignado</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="repairsTable"></tbody></table></div><div id="activePager"></div></section>
+<section class="card" id="activeSection"><div class="kpis"><div class="kpi"><span>Activas</span><b id="statActive">0</b></div><div class="kpi"><span>Pendientes</span><b id="statPending">0</b></div><div class="kpi"><span>En proceso</span><b id="statProgress">0</b></div><div class="kpi"><span>Completadas</span><b id="statCompleted">0</b></div><div class="kpi"><span>Canceladas</span><b id="statCancelled">0</b></div></div><div class="toolbar"><div class="search"><span>⌕</span><input class="input" id="search" placeholder="Buscar cliente, teléfono, código, modelo o IMEI..."></div><span class="result-count">Firebase · actualización en tiempo real</span></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Código</th><th>Teléfono</th><th>Modelo</th><th>Color</th><th>Problema</th><th>Precio</th><th>Recibido</th><th>Recibió</th><th>Asignado</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="repairsTable"></tbody></table></div><div id="activePager"></div></section>
 <section class="card history" id="historySection"><details><summary>Historial de reparaciones completadas</summary><div class="history-filters"><input class="input" type="date" id="historyFrom"><input class="input" type="date" id="historyTo"><input class="input" id="historySearch" placeholder="Buscar cliente, teléfono o modelo..."><button class="btn btn-primary" onclick="applyHistoryFilters()">Filtrar</button><button class="btn btn-secondary" onclick="clearHistoryFilters()">Limpiar</button></div><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Teléfono</th><th>Modelo</th><th>Color</th><th>Problema</th><th>Precio</th><th>Recibido</th><th>Recibió</th><th>Asignado</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="completedTable"></tbody></table></div><div id="completedPager"></div></details></section>
 </div></div></div>
 
